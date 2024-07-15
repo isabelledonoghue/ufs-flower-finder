@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-07-15"; // hardcoded for now, will need to be passed in from frontend
+const deliveryDate = "2024-07-18"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -89,7 +89,7 @@ async function extractFlowerData(page, flowerNames) {
     console.log("products loaded")
 
     return await page.evaluate((flowerNames) => {
-        const items = document.querySelectorAll('.tblResults tr[role="row"]');
+        const items = document.querySelectorAll('.product_list_item');
         console.log("console: items selected")
         let flowersData = [];
 
@@ -113,18 +113,17 @@ async function extractFlowerData(page, flowerNames) {
                 const priceElements = item.querySelectorAll('.price_text');
                 const quantityElements = item.querySelectorAll('.stock_unit');
                 const prices = [];
-                // Ensure prices and quantities are stored together
+                
+                // ensure prices and quantities stored together
                 priceElements.forEach((priceElement, index) => {
                     const price = priceElement.textContent.trim();
                     const quantity = quantityElements[index] ? quantityElements[index].textContent.trim().replace('x', '').trim() : '';
                     if (price && quantity) {
-                        console.log("console: price ", price, quantity)
-                        prices.push({
-                            price,
-                            quantity
-                        });
+                        const formattedPrice = `${price}/${quantity} stems`;
+                        prices.push(formattedPrice);
                     }
                 });
+                console.log("console: format prices ", prices);
 
                 // scrape flower color
                 const colorElement = item.querySelector('.hlx_plp_color');

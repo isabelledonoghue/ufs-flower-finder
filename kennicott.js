@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-07-15"; // hardcoded for now, will need to be passed in from frontend
+const deliveryDate = "2024-07-18"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -25,27 +25,24 @@ let numPages = 0;
     await page.goto(url); // load home page
 
     // username
-    await page.waitForSelector('#signInName'); // wait for load
+    await page.waitForSelector('#signInName'); // wait for username input
     await page.evaluate((username) => {
         document.querySelector('#signInName').value = username;
     }, username);
+    const signInNameValue = await page.evaluate(() => document.querySelector('#signInName').value);
+    console.log('entered user:', signInNameValue);
 
     // password    
-    await page.waitForSelector('#password'); // wait for load
+    await page.waitForSelector('#password'); // wait for password input
     await page.evaluate((password) => {
         document.querySelector('#password').value = password;
     }, password);
+    const passwordValue = await page.evaluate(() => document.querySelector('#password').value);
+    console.log('entered pass:', passwordValue);
 
     // submit form
-    await page.evaluate(() => {
-        document.getElementById('localAccountForm').submit();
-    });
-    // print form html
-        // const HTML = await page.evaluate(() => {
-        //     const element = document.querySelector('#localAccountForm');
-        //     return element ? element.outerHTML : null;
-        // });
-        // console.log("HTML:", HTML);
+    await page.waitForSelector('#next'); // wait for the sign-in button
+    await page.click('#next'); // click the sign-in button
     console.log("form submitted");
 
     await page.waitForNavigation(); // wait for nav
@@ -60,16 +57,19 @@ let numPages = 0;
         console.log("table loaded")
 
         const newFlowers = await extractFlowerData(page, flowerNames);
-
+        console.log("scraped page", numPages)
         flowers = flowers.concat(newFlowers);
+        console.log("added flowers")
 
-        // check if there is a next page
         const nextPageLink = await page.$('#next_gridPager');
         const isDisabled = await page.$eval('#next_gridPager', el => el.classList.contains('ui-state-disabled'));
-        if (nextPageLink && !isDisabled) {
+        console.log("next page info: ", nextPageLink, isDisabled);
+        if (!isDisabled) {
+            console.log("entered page if")
             numPages += 1;
             await nextPageLink.click();
-            await page.waitForNavigation();
+            console.log("clicked next page")
+            await page.waitForNavigation(); // BUG HERE?
             console.log("next page", numPages)
         } else {
             hasNextPage = false;
@@ -85,11 +85,11 @@ let numPages = 0;
 
 
 async function extractFlowerData(page, flowerNames) {
-    await page.waitForSelector('.product-item');
+    await page.waitForSelector('tr');
     console.log("products loaded")
 
     return await page.evaluate((flowerNames) => {
-        const items = document.querySelectorAll('.product-item');
+        const items = document.querySelectorAll('tr[role="row"]');
         console.log("console: items selected")
  
         let flowersData = [];
@@ -102,7 +102,11 @@ async function extractFlowerData(page, flowerNames) {
             // check if current name matches name from flowerNames list
             const containsFlowerName = flowerNames.some(name => flowerName.includes(name));
 
-            // scrapes matching flowers
+            // only scrape available flowers
+            const itemAvail = !item.classList.contains('ecommerce-product-not-available');
+            console.log("console: item avail", itemAvail)
+
+            // scrapes matching available flowers
             if (containsFlowerName) {
                 console.log("console: name ", flowerName)
 
@@ -112,36 +116,46 @@ async function extractFlowerData(page, flowerNames) {
                 console.log("console: image ", flowerImage)
 
                 // scrape price
-                const priceElement = item.querySelectorAll('td[aria-describedby="gridResults_unitPriceFormatted"]');
+                const priceElement = item.querySelector('td[aria-describedby="gridResults_unitPriceFormatted"]');
                 const prices = priceElement ? priceElement.getAttribute('title') : '';
                 console.log("console: price ", prices)
 
-                // scrape flower color
-                const colorElement = item.querySelector('.hlx_plp_color');
-                const color = colorElement ? colorElement.style.background : '';
+                // scrape color
+                //const colorElement = item.querySelector('.hlx_plp_color');
+                //const color = colorElement ? colorElement.style.background : '';
+                const colorElement = item.querySelector('td[aria-describedby="gridResults_color"]');
+                const color = colorElement ? colorElement.getAttribute('title') : '';
                 console.log("console: color ", color)
 
                 // scrape height
-                const heightElement = item.querySelector('.classification_attributes_block_details p');
+                //const heightElement = item.querySelector('.classification_attributes_block_details p');
+                //const height = heightElement ? heightElement.textContent.trim() : '';
+                const heightElement = item.querySelector('td[aria-describedby="gridResults_height"]');
                 const height = heightElement ? heightElement.textContent.trim() : '';
                 console.log("console: height ", height)
 
+                // scrape vendor/farm
+                const farmElement = item.querySelector('td[aria-describedby="gridResults_vendorName"]');
+                const farm = farmElement ? farmElement.getAttribute('title') : '';
+                console.log("console: farm", farm)
+
                 // scrape stems per
-                const stemsPerElement = item.querySelector('[aria-describedby="gridResults_units"]');
+                const stemsPerElement = item.querySelector('td[aria-describedby="gridResults_units"]');
                 const stemsPer = stemsPerElement ? stemsPerElement.getAttribute('title').trim() : '';
                 console.log("console: stemsPerBunch ", stemsPer)
 
-                // scrape vendor/farm
-                const farmElement = row.querySelector('td[aria-describedby="gridResults_vendorName"]');
-                const farm = farmElement ? farmElement.getAttribute('title') : '';
+                // scrape units per box
+                const unitsPerElement = item.querySelector('td[aria-describedby="gridResults_packForShow"]');
+                const unitsPer = unitsPerElement ? unitsPerElement.getAttribute('title').trim() : '';
+                console.log("console: unitsPer ", unitsPer)
 
                 // scrape stock available
-                const availabilityElement = item.querySelector('[aria-describedby="gridResults_quantityText"]');
+                const availabilityElement = item.querySelector('td[aria-describedby="gridResults_quantityText"]');
                 const availability = availabilityElement ? availabilityElement.getAttribute('title').trim() : '';
                 console.log("console: availability ", availability)
 
                 // scrape delivery
-                const deliveryDateElement = row.querySelector('td[aria-describedby="gridResults_realShipDate"]');
+                const deliveryDateElement = item.querySelector('td[aria-describedby="gridResults_realShipDate"]');
                 const delivery = deliveryDateElement ? deliveryDateElement.getAttribute('title') : '';
                 console.log("console: delivery ", delivery)
 
@@ -155,7 +169,7 @@ async function extractFlowerData(page, flowerNames) {
                     seller: "Kennicott Direct",
                     farm,
                     availability,
-                    delivery,
+                    delivery, // represents ship date
                 });
             }
         });
