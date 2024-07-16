@@ -46,12 +46,11 @@ let numPages = 0;
         console.log('entered pass:', passwordValue);
 
         // submit form
-        await page.waitForSelector('#next'); // wait for the sign-in button
+        await page.waitForSelector('#next', { visible: true }); // wait for the sign-in button
         await page.click('#next'); // click the sign-in button
-        console.log("form submitted");
-
+        console.log("clicked sign in button");
         await page.waitForNavigation(); // wait for nav
-        console.log("login success")
+        console.log("login success");
 
         let hasNextPage = true;
 
@@ -59,27 +58,38 @@ let numPages = 0;
             try {
                 console.log("entered page loop")
                 await page.waitForSelector('.tblResults'); // wait for the product list to load
-                console.log("table loaded")
+                console.log("table loaded");
 
                 const newFlowers = await extractFlowerData(page, flowerNames);
-                console.log("scraped page", numPages)
+                console.log("scraped page", numPages);
                 flowers = flowers.concat(newFlowers);
-                console.log("added flowers")
+                console.log("added flowers");
 
-                const nextPageLink = await page.$('#next_gridPager .ui-pg-button');
-                const isDisabled = await page.$eval('#next_gridPager', el => el.classList.contains('ui-state-disabled'));
-                // DEBUG
-                //console.log("next page info: ", nextPageLink, isDisabled);
-                const buttonHTML = await page.evaluate(element => element.outerHTML, nextPageLink);
-                console.log('HTML of the next page button:', buttonHTML);
-                
+                await page.waitForSelector('#next_gridPager', { visible: true }); // wait for next page link to load
+                const nextPageLink = await page.$('#next_gridPager');
+                const isDisabled = await page.$eval('#next_gridPager', el => el.classList.contains('ui-state-disabled'));  
+
+                const nextPageLinkHtml = await page.evaluate(el => el.outerHTML, nextPageLink);
+                console.log("Next page link HTML:", nextPageLinkHtml);
+
                 if (!isDisabled) {
-                    console.log("entered page if")
+                    console.log("entered page if");
                     numPages += 1;
-                    await nextPageLink.click();
-                    console.log("clicked next page")
+                    const initialPageValue = await page.$eval('.ui-pg-input', el => el.value); 
 
-                    await page.waitForNavigation(); // BUG HERE
+                    await nextPageLink.click();
+                    console.log("clicked next page");
+
+                    //await page.waitForNavigation(); // PAGE DOES NOT RELOAD
+                    await page.waitForFunction(
+                        (initialValue) => {
+                            const currentValue = document.querySelector('.ui-pg-input').value;
+                            return currentValue !== initialValue;
+                        },
+                        { timeout: 10000 },
+                        initialPageValue
+                    );
+
                     console.log("next page", numPages)
                 } else {
                     hasNextPage = false;
@@ -96,7 +106,7 @@ let numPages = 0;
             await browser.close();
             console.log("closed browser");
         }
-        console.log("scraped all data")
+        console.log("scraped all data");
         console.log(JSON.stringify(flowers));
     }
 })();

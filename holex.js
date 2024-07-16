@@ -135,9 +135,9 @@ async function extractFlowerData(page, flowerNames) {
                         if (price && quantity) {
                             const formattedPrice = `${price}/${quantity} stems`;
                             prices.push(formattedPrice);
+                            console.log("console: format prices ", formattedPrice);
                         }
                     });
-                    console.log("console: format prices ", prices);
 
                     // scrape flower color
                     const colorElement = item.querySelector('.hlx_plp_color');
