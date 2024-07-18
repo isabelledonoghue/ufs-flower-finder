@@ -13,7 +13,7 @@ def insert_data(data):
     c = conn.cursor()
     c.executemany('''
         INSERT INTO flowers (
-            flower_name, flower_image, price, color, height, stemsPer, seller, farm, availability, delivery
+            flowerName, flowerImage, prices, color, height, stemsPer, seller, farm, available, delivery
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', data)
     conn.commit()

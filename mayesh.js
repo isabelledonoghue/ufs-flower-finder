@@ -162,41 +162,37 @@ async function extractFlowerData(page, flowerNames) {
                     console.log("console: img link ", flowerImage)
 
                     const avail = item.querySelectorAll('.lot-size span');
-                    const availability = avail[0] ? avail[0].innerText.trim() : '';
-                    console.log("console: avail ", availability)
+                    const available = avail[0] ? avail[0].innerText.trim() + ' BU' : '';
+                    console.log("console: avail ", available)
+
                     let stemsPer = '';
                     if (avail[1]) {
                         stemsPer = avail[1].innerText.trim();
                         stemsPer = stemsPer.replace(/[()]/g, '');
+                        stemsPer = stemsPer.replace(' stems', ' ST/BU');
                     }
                     console.log("console: stems per ", stemsPer)
 
                     const pricePerUnitElement = item.querySelector('.price strong');
-                    const pricePerUnit = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '';
-                    console.log("console: unit price ", pricePerUnit)
-        
+                    const pricePerUnit = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '';        
                     const priceElement = item.querySelector('.lot-price');
                     const price = priceElement ? priceElement.innerText.trim().replace('Price', '').trim() : '';
-                    console.log("console: bunch price ", price)
-                
-                    // missing
-                    const color = '';
-                    const height = '';
-                    const farm = '';
-                    const delivery = '';
+                    const prices = [];
+                    if (pricePerUnit) prices.push(pricePerUnit.replace(' / stem', ' /ST'));
+                    if (price) prices.push(price.replace(' / bunch', ' /BU'));
+                    console.log("console: format price", prices);
 
                     flowersData.push({
                         flowerName,
                         flowerImage,
-                        pricePerUnit, // DIFF FROM SQL BASE
-                        price, // DIFF FROM SQL BASE
-                        color,
-                        height,
+                        prices,
+                        color: 'N/A',
+                        height: 'N/A',
                         stemsPer,
                         seller: "Mayesh",
-                        farm,
-                        availability,
-                        delivery
+                        farm: '',
+                        available,
+                        delivery: '',
                     });
                 }
             });
@@ -241,38 +237,35 @@ async function extractDutchData(page, flowerNames) {
                     if (stemsElement) {
                         stemsPer = stemsElement.innerText.trim();
                         stemsPer = stemsPer.replace(/[()]/g, '');
+                        stemsPer = stemsPer.replace(' stems', ' ST/BX');
                     }
                     console.log("console: stems per ", stemsPer);
 
                     const pricePerUnitElement = item.querySelector('.price b');
                     const pricePerUnit = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '';
-                    console.log("console: unit price ", pricePerUnit)
-        
                     const priceElement = item.querySelector('.lot-price');
                     const price = priceElement ? priceElement.innerText.trim().replace('Price', '').trim() : '';
-                    console.log("console: box price ", price)
-                
-                    const nameParts = flowerName.split(' ');
-                    const height = nameParts[nameParts.length - 1] || '';
-                    console.log("console: height", height)
+                    const prices = [];
+                    if (pricePerUnit) prices.push(pricePerUnit.replace(' / stem', ' /ST'));
+                    if (price) prices.push(price.replace(' / box', ' /BX'));
+                    console.log("console: format price", prices)
 
                     // missing
-                    const color = '';
-                    const availability = '';
-                    const delivery = '';
+                    // scrape height
+                    // const nameParts = flowerName.split(' ');
+                    // const height = nameParts[nameParts.length - 1] || '';
 
                     flowersData.push({
                         flowerName,
                         flowerImage,
-                        pricePerUnit, // DIFF FROM SQL BASE
-                        price, // DIFF FROM SQL BASE
-                        color,
-                        height,
+                        prices, 
+                        color: '',
+                        height: '',
                         stemsPer,
                         seller: "Mayesh",
-                        farm: "Dutch Direct",
-                        availability, // empty here
-                        delivery
+                        farm: "DUTCH DIRECT",
+                        available: '',
+                        delivery: '',
                     });
                 }
             });

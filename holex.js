@@ -11,15 +11,15 @@ let numPages = 0;
     try {
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
-        console.log("loaded browser")
+        // console.log("loaded browser")
 
         // print browser console messages
-        page.on('console', async msg => {
-            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-            if (args.length > 0 && args[0].includes("console:")) {
-                console.log(`${args}`);
-            }
-        });
+        // page.on('console', async msg => {
+        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        //     if (args.length > 0 && args[0].includes("console:")) {
+        //         console.error(`${args}`);
+        //     }
+        // });
 
         // login to holex
         const loginUrl = "https://holex.com/en_US/login";
@@ -38,12 +38,12 @@ let numPages = 0;
             document.querySelector('#loginForm').submit();
         });
         await page.waitForNavigation(); // wait for login
-        console.log("login success")
+        // console.log("login success")
 
         // navigate to product page
         const productPageUrl = "https://holex.com/en_US/All-products/Flowers/c/Flowers";
         await page.goto(productPageUrl);
-        console.log("navigated to product page")
+        // console.log("navigated to product page")
 
         // handle delivery date popup (if it appears)
         const popupSelector = '#cboxContent';
@@ -51,19 +51,19 @@ let numPages = 0;
         if (popupHandle) {
             // popup found, close it
             await page.click('#cboxClose');
-            console.log("closed delivery date popup");
+            // console.log("closed delivery date popup");
         } else {
             // popup not found, log message
-            console.log("no delivery date popup found");
+            // console.log("no delivery date popup found");
         }
 
         let hasNextPage = true;
 
         while (hasNextPage) {
             try {
-                console.log("entered page loop")
+                // console.log("entered page loop")
                 await page.waitForSelector('section.version_two.product_grid_page.plus_font[page-name="productGridPage"]'); // wait for the product list to load
-                console.log("page loaded")
+                // console.log("page loaded")
 
                 const newFlowers = await extractFlowerData(page, flowerNames);
                 flowers = flowers.concat(newFlowers);
@@ -74,23 +74,23 @@ let numPages = 0;
                     numPages += 1;
                     await nextPageLink.click();
                     await page.waitForNavigation();
-                    console.log("next page", numPages)
+                    // console.log("next page", numPages)
                 } else {
                     hasNextPage = false;
                 }
             } catch (err) {
-                console.error("error during pagination or scraping:", err);
+                // console.error("error during pagination or scraping:", err);
                 hasNextPage = false;
             }
         }
     } catch (err) {
-        console.error("error during login or page load:", err);
+        // console.error("error during login or page load:", err);
     } finally {
         if (browser) {
             await browser.close();
-            console.log("closed browser");
+            // console.log("closed browser");
         }
-        console.log("scraped all data")
+        // console.log("scraped all data")
         console.log(JSON.stringify(flowers));
     }
 })();
@@ -99,11 +99,11 @@ let numPages = 0;
 async function extractFlowerData(page, flowerNames) {
     try {
         await page.waitForSelector('.product_list_item');
-        console.log("products loaded")
+        // console.log("products loaded")
 
         return await page.evaluate((flowerNames) => {
             const items = document.querySelectorAll('.product_list_item');
-            console.log("console: items selected")
+            // console.log("console: items selected")
             let flowersData = [];
 
             items.forEach(item => {
@@ -116,47 +116,42 @@ async function extractFlowerData(page, flowerNames) {
 
                 // scrapes matching flowers
                 if (containsFlowerName) {
-                    console.log("console: name ", flowerName)
+                    // console.log("console: name ", flowerName)
 
                     // scrape flower image
                     const flowerImageElement = item.querySelector('img');
                     const flowerImage = flowerImageElement ? flowerImageElement.getAttribute('src') : '';
-                    console.log("console: image ", flowerImage)
+                    // console.log("console: image ", flowerImage)
 
                     // scrape prices and corresponding quantities
                     const priceElements = item.querySelectorAll('.price_text');
                     const quantityElements = item.querySelectorAll('.stock_unit');
                     const prices = [];
-                    
                     // ensure prices and quantities stored together
                     priceElements.forEach((priceElement, index) => {
                         const price = priceElement ? priceElement.textContent.trim() : '';
                         const quantity = quantityElements[index] ? quantityElements[index].textContent.trim().replace('x', '').trim() : '';
                         if (price && quantity) {
-                            const formattedPrice = `${price}/${quantity} stems`;
+                            //const formattedPrice = `${price}/${quantity} stems`;
+                            const formattedPrice = `${price.replace('$ ', '$').trim()} /${quantity} ST`;;
                             prices.push(formattedPrice);
-                            console.log("console: format prices ", formattedPrice);
                         }
                     });
+                    // console.log("console: full price", prices)
 
                     // scrape flower color
                     const colorElement = item.querySelector('.hlx_plp_color');
                     const color = colorElement ? colorElement.style.background : '';
-                    console.log("console: color ", color)
+                    // console.log("console: color ", color)
 
                     // scrape height
                     const heightElement = item.querySelector('.classification_attributes_block_details p');
                     const height = heightElement ? heightElement.textContent.trim() : '';
-                    console.log("console: height ", height)
+                    // console.log("console: height ", height)
 
                     const farmElement = item.querySelector('.country_icon_outer .text');
                     const farm = farmElement ? farmElement.innerText.trim() : '';
-                    console.log("console: farm ", farm)
-
-                    // UPDATE if can
-                    const availability = '';
-                    const delivery = '';
-                    const stemsPer = '';
+                    // console.log("console: farm ", farm)
 
                     flowersData.push({
                         flowerName,
@@ -164,18 +159,18 @@ async function extractFlowerData(page, flowerNames) {
                         prices,
                         color,
                         height,
-                        stemsPer,
+                        stemsPer: 'N/A',
                         seller: "Holex",
                         farm,
-                        availability,
-                        delivery
+                        available: 'N/A',
+                        delivery: '',
                     });
                 }
             });
             return flowersData;
         }, flowerNames);
     } catch (err) {
-        console.error("error during data extraction:", err);
+        // console.error("error during data extraction:", err);
         return [];
     }
 }

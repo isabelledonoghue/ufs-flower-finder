@@ -6,43 +6,71 @@ from database import insert_data
 
 app = Flask(__name__)
 
-def query_database(query, params):
-    conn = sqlite3.connect('flowers.db')
-    c = conn.cursor()
-    c.execute(query, params)
-    result = c.fetchall()
-    conn.close()
-    return result
+# def query_database(query, params):
+#     conn = sqlite3.connect('flowers.db')
+#     c = conn.cursor()
+#     c.execute(query, params)
+#     result = c.fetchall()
+#     conn.close()
+#     return result
 
-# searching API endpoint
-@app.route('/search')
-def search():
-    flower_name = request.args.get('flower_name', '')
-    query = '''
-        SELECT flower_name, flower_image, price, color, height, stemsPer, seller, farm, availability, delivery
-        FROM flowers
-        WHERE flower_name LIKE ?
-    '''
-    result = query_database(query, (f'%{flower_name}%'))
-    return jsonify(result)
+# # searching API endpoint
+# @app.route('/search')
+# def search():
+#     flower_name = request.args.get('flower_name', '')
+#     query = '''
+#         SELECT flowerName, flowerImage, prices, color, height, stemsPer, seller, farm, available, delivery
+#         FROM flowers
+#         WHERE flowerName LIKE ?
+#     '''
+#     result = query_database(query, (f'%{flower_name}%'))
+#     return jsonify(result)
+
+
+# runs an individual scraper script
+def run_scraper(script_name):
+    """Run a Puppeteer script and return its output."""
+    result = subprocess.run(['node', script_name], capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"Error running {script_name}: {result.stderr}")
+        return None
+
+    return result.stdout
+
+# runs each of the scripts
+def run_all_scrapers():
+    """Run all Puppeteer scripts and return their combined JSON outputs."""
+    # NOTE will need to comment all console.logs before running API
+    scripts = ['kennicott.js', 'holex.js', 'mayesh.js']
+    all_data = []
+
+    for script in scripts:
+        output = run_scraper(script)
+        if output is None:
+            continue
+        
+        try:
+            data = json.loads(output)
+        except json.JSONDecodeError:
+            print(f"Invalid JSON received from {script}")
+            continue
+        
+        all_data.extend(data)
+    
+    return all_data
 
 # scraping API endpoint
 @app.route('/scrape', methods=['POST'])
-def scrape():
-    # triggers Puppeteer script
-    # TO DO - only calls Holex right now
-    result = subprocess.run(['node', 'holex.js'], capture_output=True, text=True)
-    if result.returncode != 0:
-        return jsonify({'error': 'scraping failed'}), 500
-    
-    # FIX HERE - result is not json data
-    print("Subprocess output:", result.stdout)
-    data = json.loads(result.stdout)
+def scrape():    
+    data = run_all_scrapers()
+    if not data:
+        return jsonify({'error': 'Scraping failed or no data received'}), 500
     
     formatted_data = [
         (
-            flower['flowerName'], flower['flowerImage'], flower['price'], flower['color'], flower['height'],
-            flower['stemsPer'], flower['seller'], flower['farm'], flower['availability'], flower['delivery']
+            flower['flowerName'], flower['flowerImage'], flower['prices'], flower['color'], flower['height'],
+            flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
         )
         for flower in data
     ]
