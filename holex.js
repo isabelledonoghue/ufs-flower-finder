@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-07-18"; // hardcoded for now, will need to be passed in from frontend
+let deliveryDate = "08/05/2024"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -11,15 +11,15 @@ let numPages = 0;
     try {
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
-        // console.log("loaded browser")
+        console.log("loaded browser")
 
-        // print browser console messages
-        // page.on('console', async msg => {
-        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-        //     if (args.length > 0 && args[0].includes("console:")) {
-        //         console.error(`${args}`);
-        //     }
-        // });
+        //print browser console messages
+        page.on('console', async msg => {
+            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+            if (args.length > 0 && args[0].includes("console:")) {
+                console.error(`${args}`);
+            }
+        });
 
         // login to holex
         const loginUrl = "https://holex.com/en_US/login";
@@ -38,12 +38,12 @@ let numPages = 0;
             document.querySelector('#loginForm').submit();
         });
         await page.waitForNavigation(); // wait for login
-        // console.log("login success")
+        console.log("login success")
 
         // navigate to product page
         const productPageUrl = "https://holex.com/en_US/All-products/Flowers/c/Flowers";
         await page.goto(productPageUrl);
-        // console.log("navigated to product page")
+        console.log("navigated to product page")
 
         // handle delivery date popup (if it appears)
         const popupSelector = '#cboxContent';
@@ -51,72 +51,282 @@ let numPages = 0;
         if (popupHandle) {
             // popup found, close it
             await page.click('#cboxClose');
-            // console.log("closed delivery date popup");
+            console.log("closed delivery date popup");
         } else {
-            // popup not found, log message
             // console.log("no delivery date popup found");
         }
 
-        let hasNextPage = true;
+        // check if original delivery date is found and available
+        const { inputDateFound, inputDateAvail } = await findInputDate(page, deliveryDate);
+        console.log("input date status:", inputDateFound, inputDateAvail);
 
-        while (hasNextPage) {
-            try {
-                // console.log("entered page loop")
-                await page.waitForSelector('section.version_two.product_grid_page.plus_font[page-name="productGridPage"]'); // wait for the product list to load
-                // console.log("page loaded")
-
-                const newFlowers = await extractFlowerData(page, flowerNames);
-                flowers = flowers.concat(newFlowers);
-
-                // check if there is a next page
-                const nextPageLink = await page.$('li.pagination-next.hidden-xs a');
-                if (nextPageLink) {
-                    numPages += 1;
-                    await nextPageLink.click();
-                    await page.waitForNavigation();
-                    // console.log("next page", numPages)
-                } else {
-                    hasNextPage = false;
+        // ensure input date is found
+        if (inputDateFound) {
+            // input date is disabled, move to first open date
+            if (!inputDateAvail) {
+                deliveryDate = await getNextAvailableDate(page, deliveryDate);
+            }
+            // scrape data for multiple delivery dates
+            for (let i = 0; i < 3; i++) {
+                await selectDeliveryDate(page, deliveryDate);
+                console.log("selected delivery date:", deliveryDate)
+                // loop through each page
+                let hasNextPage = true;
+                while (hasNextPage) {
+                    try {
+                        console.log("entered page loop")
+                        await page.waitForSelector('section.version_two.product_grid_page.plus_font[page-name="productGridPage"]'); // wait for the product list to load
+                        console.log("page loaded")
+                        const newFlowers = await extractFlowerData(page, flowerNames, deliveryDate);
+                        flowers = flowers.concat(newFlowers);
+                        // check if there is a next page
+                        const nextPageLink = await page.$('li.pagination-next.hidden-xs a');
+                        if (nextPageLink) {
+                            numPages += 1;
+                            await nextPageLink.click();
+                            await page.waitForNavigation();
+                            console.log("next page", numPages)
+                        } else {
+                            hasNextPage = false;
+                            console.log("last page")
+                        }
+                    } catch (err) {
+                        // console.error("error during pagination or scraping:", err);
+                        hasNextPage = false;
+                    }
                 }
-            } catch (err) {
-                // console.error("error during pagination or scraping:", err);
-                hasNextPage = false;
+                // go back to first page after looping through all
+                await page.waitForSelector('#upgrade-pagination');
+                await page.focus('#upgrade-pagination'); // focus on input field
+                await page.evaluate(() => document.querySelector('#upgrade-pagination').value = ''); // clear current value
+                await page.type('#upgrade-pagination', '1'); // type page 1
+                await page.keyboard.press('Enter'); // press enter
+                // reset number of pages
+                numPages = 0;
+
+                if (i < 2) {
+                    deliveryDate = await getNextAvailableDate(page, deliveryDate);
+                    // check next date was found
+                    if (deliveryDate == "00/00/0000") {
+                        console.log("invalid next delivery date");
+                        break;
+                    }
+                    console.log("updated delivery date", deliveryDate);
+                } 
             }
         }
+        else {
+            console.log("input date was not found")
+        }
     } catch (err) {
-        // console.error("error during login or page load:", err);
+        console.error("error during login or page load:", err);
     } finally {
         if (browser) {
             await browser.close();
-            // console.log("closed browser");
+            console.log("closed browser");
         }
-        // console.log("scraped all data")
+        //console.log("scraped all data")
         console.log(JSON.stringify(flowers));
     }
 })();
 
 
-async function extractFlowerData(page, flowerNames) {
+async function findInputDate(page, deliveryDate) {
+    console.log("entered findInputDate");
+
+    // click on calendar
+    await page.waitForSelector('.js-custom_datepicker');
+    await page.click('.js-custom_datepicker');
+
+    // wait for calendar to appear
+    await page.waitForSelector('.bootstrap-datetimepicker-widget');
+
+    // get date table
+    const days = await page.$$('.bootstrap-datetimepicker-widget .datepicker-days td[data-action="selectDay"]');
+
+    let inputDateFound = false;
+    let inputDateAvail = false;
+
+    for (const day of days) {
+        const { dayDate, isDisabled } = await page.evaluate(el => {
+            return {
+                dayDate: el.getAttribute('data-day'),
+                isDisabled: el.classList.contains('disabled')
+            };
+        }, day);
+
+        if (dayDate === deliveryDate) {
+            inputDateFound = true;
+            inputDateAvail = !isDisabled;
+            console.log(`date ${deliveryDate} is ${inputDateAvail ? 'available' : 'disabled'}`);
+            break; // exit loop once the date is found
+        }
+    }
+
+    if (!inputDateFound) {
+        console.log(`date ${deliveryDate} not found in the calendar`);
+    }
+    return { inputDateFound, inputDateAvail };
+}
+
+
+async function getNextAvailableDate(page, currentDate) {
+    console.log("entered getNextAvailableDate")
+
+    // click on calendar
+    await page.waitForSelector('.js-custom_datepicker');
+    await page.click('.js-custom_datepicker');
+
+    // wait for calendar to appear
+    await page.waitForSelector('.bootstrap-datetimepicker-widget');
+
+    // get date table
+    const days = await page.$$('.bootstrap-datetimepicker-widget .datepicker-days td[data-action="selectDay"]');
+    let foundCurrent = false;
+
+    // loop through day elements
+    for (const day of days) {
+        // get date and disabled status of element
+        const { dayDate, isDisabled } = await page.evaluate(el => {
+            return {
+                dayDate: el.getAttribute('data-day'),
+                isDisabled: el.classList.contains('disabled')
+            };
+        }, day);
+    
+        if (foundCurrent && !isDisabled) {
+            console.log("next available date found:", dayDate);
+            return dayDate;
+        }
+    
+        if (dayDate === currentDate) {
+            foundCurrent = true;
+            console.log("found deliveryDate");
+        }
+    }
+    
+    // no next available date found, return current date
+    console.log("no next available date found");
+    return "00/00/0000"; // filler value
+}
+
+
+async function selectDeliveryDate(page, deliveryDate) {
+    console.log("entered selectDeliveryDate");
+
+    const deliveryDateSelector = '.js-custom_datepicker';
+    const popupSelector = '#cboxLoadedContent';
+    const confirmButtonSelector = '.confirm_select_date';
+
+    // click on calendar
+    await page.waitForSelector(deliveryDateSelector);
+    await page.click(deliveryDateSelector);
+
+    // wait for calendar to appear
+    await page.waitForSelector('.bootstrap-datetimepicker-widget');
+
+    // navigate to correct month and year in calendar
+    await navigateCalendar(page, deliveryDate);
+
+    // find all day elements in the calendar
+    const days = await page.$$('.bootstrap-datetimepicker-widget .datepicker-days td[data-action="selectDay"]');
+
+    // iterate through days to find the correct date
+    for (const day of days) {
+        const dayValue = await page.evaluate(el => el.getAttribute('data-day'), day);
+        if (dayValue === deliveryDate) {
+            console.log(`clicking date: ${deliveryDate}`);
+            await day.click();
+
+            // handle confirmation popup
+            await page.waitForSelector(popupSelector, { timeout: 5000 }).catch(() => null);
+            //console.log("popup appeared");
+            const popupHandle = await page.$(popupSelector);
+            if (popupHandle) {
+                // click confirm button
+                const confirmButton = await page.$(confirmButtonSelector);
+                if (confirmButton) {
+                    await confirmButton.click();
+                    await page.waitForNavigation();
+                    //console.log("clicked confirm button");
+                } else {
+                    console.log("continue button not found in popup");
+                }
+            } else {
+                console.log("popup not found");
+            }
+            return; // exit the function after selecting the date and handling the popup
+        }
+    }
+    console.log(`date ${deliveryDate} not found or is disabled`);
+}
+
+
+async function navigateCalendar(page, deliveryDate) {
+    // click on calendar
+    await page.waitForSelector('.js-custom_datepicker');
+    await page.click('.js-custom_datepicker');
+    
+    // wait for calendar to appear
+    await page.waitForSelector('.bootstrap-datetimepicker-widget');
+
+    // select title from calendar
+    const calendarTitleSelector = '.bootstrap-datetimepicker-widget .picker-switch';
+    
+    // parse month and year from current deliveryDate
+    const [month, day, year] = deliveryDate.split('/');
+    const deliveryMonth = parseInt(month, 10); // convert into M
+    const deliveryYear = parseInt(year, 10); // convert into YYYY
+    console.log("delivery date month, year", deliveryMonth, deliveryYear);
+
+    // extract month and year from calendar title
+    const getCalendarTitle = async () => {
+        return await page.$eval(calendarTitleSelector, el => el.textContent.trim());
+    };
+
+    let calendarTitle = await getCalendarTitle();
+    let [calendarMonthName, calendarYear] = calendarTitle.split(' ');
+    let calendarMonth = new Date(Date.parse(calendarMonthName + " 1, 2024")).getMonth() + 1; // converts month name to num (1-12)
+    let calendarYearNumber = parseInt(calendarYear, 10);
+    //console.log("cal month, year", calendarMonth, calendarYearNumber);
+
+    // navigate to correct month year in calendar
+    while (deliveryMonth !== calendarMonth || deliveryYear !== calendarYearNumber) {
+        await page.click('.bootstrap-datetimepicker-widget .next');
+        //console.log("navigated to next month");
+        calendarTitle = await getCalendarTitle();
+        [calendarMonthName, calendarYear] = calendarTitle.split(' ');
+        calendarMonth = new Date(Date.parse(calendarMonthName + " 1, 2024")).getMonth() + 1;
+        calendarYearNumber = parseInt(calendarYear, 10);
+        //console.log("cal month, year", calendarMonth, calendarYearNumber);
+    }
+    console.log("cal month, year", calendarMonth, calendarYearNumber);
+}
+
+
+async function extractFlowerData(page, flowerNames, currDeliveryDate) {
+    console.log("entered extractFlowerData for date:", currDeliveryDate);
     try {
         await page.waitForSelector('.product_list_item');
-        // console.log("products loaded")
+        console.log("products loaded")
 
-        return await page.evaluate((flowerNames) => {
+        return await page.evaluate((flowerNames, currDeliveryDate) => {
             const items = document.querySelectorAll('.product_list_item');
-            // console.log("console: items selected")
+            console.log("console: items selected")
             let flowersData = [];
 
             items.forEach(item => {
                 // extracts flower name in all caps
                 const flowerNameElement = item.querySelector('.name_fav a');
                 const flowerName = flowerNameElement ? flowerNameElement.textContent.trim().toUpperCase() : '';
+                console.log("flower name:", flowerName);
 
                 // check if current name matches name from flowerNames list
                 const containsFlowerName = flowerNames.some(name => flowerName.includes(name));
 
                 // scrapes matching flowers
                 if (containsFlowerName) {
-                    // console.log("console: name ", flowerName)
+                    console.log("console: name ", flowerName)
 
                     // scrape flower image
                     const flowerImageElement = item.querySelector('img');
@@ -153,6 +363,10 @@ async function extractFlowerData(page, flowerNames) {
                     const farm = farmElement ? farmElement.innerText.trim() : '';
                     // console.log("console: farm ", farm)
 
+                    // delivery is date passed in
+                    const delivery = currDeliveryDate;
+                    // console.log("console: delivery date", delivery)
+
                     flowersData.push({
                         flowerName,
                         flowerImage,
@@ -163,14 +377,14 @@ async function extractFlowerData(page, flowerNames) {
                         seller: "Holex",
                         farm,
                         available: 'N/A',
-                        delivery: '',
+                        delivery,
                     });
                 }
             });
             return flowersData;
         }, flowerNames);
     } catch (err) {
-        // console.error("error during data extraction:", err);
+        console.error("error during data extraction:", err);
         return [];
     }
 }
