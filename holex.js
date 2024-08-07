@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-let deliveryDate = "08/05/2024"; // hardcoded for now, will need to be passed in from frontend
+let deliveryDate = "2024-08-08"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -56,13 +56,23 @@ let numPages = 0;
             // console.log("no delivery date popup found");
         }
 
+        // convert delivery date from frontend into delivery date wanted
+        // input - 2024-08-06
+        // output - 08/06/2024
+        const [inputYear, inputMonth, inputDay] = deliveryDate.split('-').map(Number);
+        let formattedInputDate = new Date(inputYear, inputMonth - 1, inputDay);
+        const inputMonthString = (formattedInputDate.getMonth() + 1).toString().padStart(2, '0');
+        const inputDayString = formattedInputDate.getDate().toString().padStart(2, '0');
+        const inputYearString = formattedInputDate.getFullYear();
+        deliveryDate = `${inputMonthString}/${inputDayString}/${inputYearString}`;
+
         // check if original delivery date is found and available
         const { inputDateFound, inputDateAvail } = await findInputDate(page, deliveryDate);
         console.log("input date status:", inputDateFound, inputDateAvail);
 
         // ensure input date is found
         if (inputDateFound) {
-            // input date is disabled, move to first open date
+            // input date is disabled, move to first open datec
             if (!inputDateAvail) {
                 deliveryDate = await getNextAvailableDate(page, deliveryDate);
             }
