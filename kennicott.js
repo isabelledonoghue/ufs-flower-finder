@@ -34,7 +34,7 @@ let numPages = 0;
         await page.evaluate((username) => {
             document.querySelector('#signInName').value = username;
         }, username);
-        const signInNameValue = await page.evaluate(() => document.querySelector('#signInName').value);
+        //const signInNameValue = await page.evaluate(() => document.querySelector('#signInName').value);
         //console.log('entered user:', signInNameValue);
 
         // password    
@@ -42,7 +42,7 @@ let numPages = 0;
         await page.evaluate((password) => {
             document.querySelector('#password').value = password;
         }, password);
-        const passwordValue = await page.evaluate(() => document.querySelector('#password').value);
+        //const passwordValue = await page.evaluate(() => document.querySelector('#password').value);
         //console.log('entered pass:', passwordValue);
 
         // submit form
@@ -61,8 +61,9 @@ let numPages = 0;
             console.log(`scraping data for delivery date: ${currentDate}`);
             // set the delivery date on the page
             await setDeliveryDate(page, currentDate);
+
             // scrape data for the current date
-            flowers = flowers.concat(await scrapeData(page, flowers));
+            flowers = flowers.concat(await scrapeData(page, flowers, currentDate));
             // increment the date for the next iteration
             currentDate = incrementDate(currentDate);
         }
@@ -79,7 +80,7 @@ let numPages = 0;
 })();
 
 
-async function scrapeData(page, flowers) {
+async function scrapeData(page, flowers, currentDate) {
     let hasNextPage = true;
 
     while (hasNextPage) {
@@ -88,7 +89,7 @@ async function scrapeData(page, flowers) {
             await page.waitForSelector('.tblResults'); // wait for the product list to load
             // console.log("table loaded");
 
-            const newFlowers = await extractFlowerData(page, flowerNames);
+            const newFlowers = await extractFlowerData(page, flowerNames, currentDate);
             // console.log("scraped page", numPages);
             flowers = flowers.concat(newFlowers);
             // console.log("added flowers");
@@ -173,15 +174,15 @@ async function setDeliveryDate(page, currentDate) {
 }
 
 
-async function extractFlowerData(page, flowerNames) {
+async function extractFlowerData(page, flowerNames, date) {
     console.log("entered extractFlowerData")
     try {
         await page.waitForSelector('tr');
         // console.log("products loaded")
 
-        return await page.evaluate((flowerNames) => {
+        return await page.evaluate((flowerNames, date) => {
             const items = document.querySelectorAll('tr[role="row"]');
-            //console.log("console: items selected")
+            console.log("console: items selected")
     
             let flowersData = [];
 
@@ -229,6 +230,8 @@ async function extractFlowerData(page, flowerNames) {
                     const available = availableOnly ? `${availableOnly} (${unitsPer} per)` : '';
                     // console.log("console: availability ", available)
 
+                    const delivery = date;
+
                     // missing data - img and height
                     // const flowerImageElement = item.querySelector('td[aria-describedby="gridResults_productDescription"] .image-preview img');
                     // const flowerImage = flowerImageElement ? flowerImageElement.getAttribute('src') : '';
@@ -247,14 +250,14 @@ async function extractFlowerData(page, flowerNames) {
                         seller: "Kennicott Direct",
                         farm,
                         available,
-                        delivery: '', // represents ship date
+                        delivery, // represents ship date
                     });
                 }
             });
             return flowersData;
-        }, flowerNames);
+        }, flowerNames, date);
     } catch (err) {
-        // console.error("error during data extraction:", err);
+        console.error("error during data extraction:", err);
         return [];
     }
 }
