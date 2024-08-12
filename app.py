@@ -33,9 +33,11 @@ def home():
 
 
 # runs an individual scraper script
-def run_scraper(script_name):
+def run_scraper(script_name, delivery_date, flower_names):
     """Run a Puppeteer script and return its output."""
-    result = subprocess.run(['node', script_name], capture_output=True, text=True)
+    # construct command to run using arguments
+    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+    result = subprocess.run(command, capture_output=True, text=True)
     
     if result.returncode != 0:
         print(f"Error running {script_name}: {result.stderr}")
@@ -44,15 +46,13 @@ def run_scraper(script_name):
     return result.stdout
 
 # runs each of the scripts
-def run_all_scrapers():
+def run_all_scrapers(delivery_date, flower_names, scripts):
     """Run all Puppeteer scripts and return their combined JSON outputs."""
-    # NOTE will need to comment all console.logs before running API
-    scripts = ['mayesh.js']
     all_data = []
 
     for script in scripts:
         print(f"scraping data from {script}")
-        output = run_scraper(script)
+        output = run_scraper(f'{script}.js', delivery_date, flower_names)
         if output is None:
             continue
         
@@ -69,7 +69,17 @@ def run_all_scrapers():
 # scraping API endpoint
 @app.route('/scrape', methods=['POST'])
 def scrape():    
-    data = run_all_scrapers()
+    # get parameters from request
+    delivery_date = request.json.get('deliveryDate')
+    flower_names = request.json.get('flowerNames', [])
+    scripts = request.json.get('scripts', [])
+    
+    print(f"arguments {scripts, delivery_date, flower_names}")
+
+    if not delivery_date or not flower_names or not scripts:
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    data = run_all_scrapers(delivery_date, flower_names, scripts)
     if not data:
         return jsonify({'error': 'Scraping failed or no data received'}), 500
     

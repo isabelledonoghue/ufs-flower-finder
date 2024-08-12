@@ -1,7 +1,19 @@
 const puppeteer = require('puppeteer');
 
-const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-08-14"; // hardcoded for now, will need to be passed in from frontend
+// parse command line arguments
+const args = process.argv.slice(2); 
+let deliveryDate = '';
+let flowerNames = [];
+// get argument by flag
+function getArgValue(flag) {
+    const index = args.indexOf(flag);
+    return index > -1 ? args[index + 1] : null;
+}
+// extract values
+deliveryDate = getArgValue('--deliveryDate') || '';
+flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
+    "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
+];
 let numPages = 0;
 
 (async () => {
