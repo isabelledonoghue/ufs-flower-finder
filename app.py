@@ -6,6 +6,11 @@ from database import insert_data
 
 app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "Flask server is running!"
+
+
 # def query_database(query, params):
 #     conn = sqlite3.connect('flowers.db')
 #     c = conn.cursor()
@@ -42,10 +47,11 @@ def run_scraper(script_name):
 def run_all_scrapers():
     """Run all Puppeteer scripts and return their combined JSON outputs."""
     # NOTE will need to comment all console.logs before running API
-    scripts = ['kennicott.js', 'holex.js', 'mayesh.js']
+    scripts = ['mayesh.js']
     all_data = []
 
     for script in scripts:
+        print(f"scraping data from {script}")
         output = run_scraper(script)
         if output is None:
             continue
@@ -69,7 +75,7 @@ def scrape():
     
     formatted_data = [
         (
-            flower['flowerName'], flower['flowerImage'], flower['prices'], flower['color'], flower['height'],
+            flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
             flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
         )
         for flower in data

@@ -5,6 +5,7 @@ CREATE TABLE flowers (
     flowerName TEXT NOT NULL, 
     flowerImage TEXT,
     prices TEXT,
+    stemPrice TEXT,
     color TEXT,
     height TEXT,
     stemsPer TEXT,

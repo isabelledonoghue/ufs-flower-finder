@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-08-06"; // hardcoded for now, will need to be passed in from frontend
+const deliveryDate = "2024-08-14"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -12,17 +12,17 @@ let numPages = 0;
 
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
-        console.log("loaded browser")
+        //console.log("loaded browser")
 
         // print browser console messages
-        page.on('console', async msg => {
-            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-            if (args.length > 0 && args[0].includes("console:")) {
-                console.log(`${args}`);
-            }
-        });
+        // page.on('console', async msg => {
+        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        //     if (args.length > 0 && args[0].includes("console:")) {
+        //         console.log(`${args}`);
+        //     }
+        // });
 
-        // login to holex
+        // login to kennicott
         const url = "https://shop.kennicott.com/";
         const username = "events@uniflowershop.com";
         const password = "StudioUFS212";
@@ -50,7 +50,7 @@ let numPages = 0;
         await page.click('#next'); // click the sign-in button
         //console.log("clicked sign in button");
         await page.waitForNavigation(); // wait for nav
-        console.log("login success");
+        //console.log("login success");
 
         // format input delivery date
         const deliveryDateObj = new Date(deliveryDate);
@@ -58,12 +58,14 @@ let numPages = 0;
 
         // loop through three different dates
         for (let i = 0; i < 3; i++) {
-            console.log(`scraping data for delivery date: ${currentDate}`);
+            //console.log(`scraping data for delivery date: ${currentDate}`);
             // set the delivery date on the page
-            await setDeliveryDate(page, currentDate);
-
-            // scrape data for the current date
-            flowers = flowers.concat(await scrapeData(page, flowers, currentDate));
+            const setDate = await setDeliveryDate(page, currentDate);
+            // scrape data for the new date
+            if (setDate) {
+                //console.log("set date successfully")
+                flowers = await scrapeData(page, flowers, currentDate);
+            }
             // increment the date for the next iteration
             currentDate = incrementDate(currentDate);
         }
@@ -72,7 +74,7 @@ let numPages = 0;
     } finally {
         if (browser) {
             await browser.close();
-            console.log("closed browser");
+            //console.log("closed browser");
         }
         // console.log("scraped all data");
         console.log(JSON.stringify(flowers));
@@ -85,7 +87,7 @@ async function scrapeData(page, flowers, currentDate) {
 
     while (hasNextPage) {
         try {
-            console.log("entered page loop")
+            // page loop")
             await page.waitForSelector('.tblResults'); // wait for the product list to load
             // console.log("table loaded");
 
@@ -94,8 +96,20 @@ async function scrapeData(page, flowers, currentDate) {
             flowers = flowers.concat(newFlowers);
             // console.log("added flowers");
 
-            await page.waitForSelector('#next_gridPager', { visible: true }); // wait for next page link to load
-            const nextPageLink = await page.$('#next_gridPager');
+            // check for next page button
+            //await page.waitForSelector('#next_gridPager', { visible: true }); // wait for next page link to load
+            let nextPageLink;
+            try {
+                nextPageLink = await page.$('#next_gridPager');
+                if (!nextPageLink) {
+                    throw new Error("Next button not found");
+                }
+            } catch (err) {
+                console.error("next button does not exist:", err.message);
+                hasNextPage = false; // exit loop
+                continue;
+            }
+
             const isDisabled = await page.$eval('#next_gridPager', el => el.classList.contains('ui-state-disabled'));
             if (!isDisabled) {
                 // console.log("entered page if");
@@ -114,7 +128,7 @@ async function scrapeData(page, flowers, currentDate) {
                     initialPageValue
                 );
 
-                console.log("next page", numPages)
+                //console.log("next page", numPages)
             } else {
                 hasNextPage = false;
             }
@@ -162,27 +176,52 @@ async function setDeliveryDate(page, currentDate) {
         await page.type('#txtShipDate', currentDate, { delay: 100 });
         await page.keyboard.press('Enter');
 
-        // wait for table to reload (loading disappears)
-        await page.waitForFunction(() => {
-            const loadingDiv = document.querySelector('#load_gridResults');
-            return loadingDiv && window.getComputedStyle(loadingDiv).display === 'none';
-        });
-        console.log(`successfully set delivery date to ${currentDate}`);
+        // ERROR HANDLING
+        // check for error popup
+        const noProductsModal = await page.$('.modal-container');
+        if (noProductsModal) {
+            const noProductsMessage = await page.$eval('.modal-container .modal-title label', el => el.textContent);
+            if (noProductsMessage.includes('There are no products available')) {
+                await page.click('#button0'); // click OK button
+                //console.log('no products popup for the selected date.');
+                return false;
+            }
+        }
+        // check if table is empty
+        const emptyTableRow = await page.$('tr.trEcommerceInventoryNoResults');
+        if (emptyTableRow) {
+            const displayStyle = await page.evaluate(el => window.getComputedStyle(el).display, emptyTableRow);
+            if (displayStyle === 'table-row') {
+                //console.log('table is empty for the selected date');
+                return false;
+            }
+        }
+
+        // wait for table to reload if no errors found
+        await page.waitForFunction(
+            () => {
+                const loadingDiv = document.querySelector('#load_gridResults');
+                return loadingDiv && window.getComputedStyle(loadingDiv).display === 'none';
+            },
+            { timeout: 10000 });
+        //console.log(`successfully set delivery date to ${currentDate}`);
+        return true;
     } catch (err) {
         console.error('error setting delivery date:', err);
+        return false;
     }
 }
 
 
 async function extractFlowerData(page, flowerNames, date) {
-    console.log("entered extractFlowerData")
+    //console.log("entered extractFlowerData")
     try {
         await page.waitForSelector('tr');
         // console.log("products loaded")
 
         return await page.evaluate((flowerNames, date) => {
             const items = document.querySelectorAll('tr[role="row"]');
-            console.log("console: items selected")
+            //console.log("console: items selected")
     
             let flowersData = [];
 
@@ -200,7 +239,7 @@ async function extractFlowerData(page, flowerNames, date) {
                 // scrapes matching available flowers
                 if (containsFlowerName && itemAvail) {
                     // console.log("console: item avail", itemAvail)
-                    console.log("console: name ", flowerName)
+                    //console.log("console: name ", flowerName)
 
                     // scrape price
                     const priceElement = item.querySelector('td[aria-describedby="gridResults_unitPriceFormatted"]');
@@ -227,10 +266,38 @@ async function extractFlowerData(page, flowerNames, date) {
                     const unitsPer = unitsPerElement ? unitsPerElement.getAttribute('title').trim() : '';
                     const availabilityElement = item.querySelector('td[aria-describedby="gridResults_quantityText"]');
                     const availableOnly = availabilityElement ? availabilityElement.getAttribute('title').trim() : '';
-                    const available = availableOnly ? `${availableOnly} (${unitsPer} per)` : '';
+                    const available = availableOnly ? `${availableOnly.replace(/\xa0/g, ' ')} (${unitsPer} per)` : '';
                     // console.log("console: availability ", available)
 
+                    // delivery date passed in
                     const delivery = date;
+
+                    // calculate price per one stem
+                    let stemPrice = '0';
+                    if (prices.includes('BU')) {
+                        const priceVal = prices.match(/[\d.]+/);
+                        //console.log("console: priceVal", priceVal);
+                        if (priceVal) {
+                            const pricePerBU = parseFloat(priceVal[0]);
+                            //console.log("console: pricePerBU", pricePerBU);
+
+                            const stemsPerMatch = stemsPer.match(/(\d+)/);
+                            const stemsPerVal = stemsPerMatch ? parseFloat(stemsPerMatch[0]) : 0;
+                            //console.log("console: stemsPerValue", stemsPerVal);
+
+                            if (stemsPerVal > 0) {
+                                stemPrice = (pricePerBU / stemsPerVal).toFixed(2);; // calc price per stem
+                            } else {
+                                stemPrice = '0'; // edge case
+                            }
+                            //console.log("console: stemPrice", stemPrice);
+                        }
+                    } else {
+                        const cleanedPrices = prices.replace(/[^\d.]/g, '');
+                        const priceVal = parseFloat(cleanedPrices);
+                        stemPrice = !isNaN(priceVal) ? priceVal.toFixed(2) : '0';
+                        //console.log("console: stemPrice", stemPrice);
+                    }
 
                     // missing data - img and height
                     // const flowerImageElement = item.querySelector('td[aria-describedby="gridResults_productDescription"] .image-preview img');
@@ -244,13 +311,14 @@ async function extractFlowerData(page, flowerNames, date) {
                         flowerName,
                         flowerImage: '',
                         prices,
+                        stemPrice,
                         color,
-                        height: 'N/A',
+                        height: '',
                         stemsPer,
                         seller: "Kennicott Direct",
                         farm,
                         available,
-                        delivery, // represents ship date
+                        delivery
                     });
                 }
             });

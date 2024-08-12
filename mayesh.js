@@ -1,10 +1,7 @@
 const puppeteer = require('puppeteer');
 
-// NOTES
-// ONLY PROBLEM LEFT - date is not being passed into scraping correctly so delivery json is empty 
-
 const flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-const deliveryDate = "2024-08-09"; // hardcoded for now, will need to be passed in from frontend
+const deliveryDate = "2024-08-14"; // hardcoded for now, will need to be passed in from frontend
 let numPages = 0;
 
 (async () => {
@@ -14,7 +11,7 @@ let numPages = 0;
     try {
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
-        console.log("loaded browser")
+        //console.log("loaded browser")
 
         // print browser console messages
         page.on('console', async msg => {
@@ -40,7 +37,7 @@ let numPages = 0;
         await page.click('.btn-primary');
         //console.log("filled login info")
         await page.waitForNavigation(); // wait for login
-        console.log("login success")
+        //console.log("login success")
 
         // scrape ALL for multiple dates
         // start at input date first
@@ -51,13 +48,13 @@ let numPages = 0;
             if (numAttempts < 5) {
                 // count number of date change attempts
                 numAttempts++;
-                console.log("attempt number:", numAttempts);
+                //console.log("attempt number:", numAttempts);
                 // reset pages count
                 numPages = 0;
                 try {
                     // format current date
                     const dateString = formatDate(currentDate);
-                    console.log("dateString:", dateString)
+                    //console.log("dateString:", dateString)
 
                     // navigate in current date url
                     const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
@@ -80,18 +77,18 @@ let numPages = 0;
                     //console.log("input value prior:", inputValue);
                     const [month, day, year] = inputValue.split('-');
                     inputValue = `${year}-${month}-${day}`;
-                    console.log('inputValue:', inputValue);
+                    //console.log('inputValue:', inputValue);
 
                     if (inputValue == dateString) {
-                        console.log("valid date");
-                        await scrapeAllDate(page, dateString, flowers);
-                        console.log("scraped date:", dateString);
+                        //console.log("valid date");
+                        flowers = await scrapeAllDate(page, dateString, flowers);
+                        //console.log("scraped date:", dateString);
                         // increment date
                         currentDate = incrementDate(currentDate);
                         //console.log("incremented to date:", currentDate);
                         numScrapes++;
                     } else {
-                        console.log("invalid date");
+                        //console.log("invalid date");
                         currentDate = incrementDate(currentDate);
                         //console.log("incremented to date:", currentDate);
                     }
@@ -117,7 +114,7 @@ let numPages = 0;
                 try {
                     // format current date
                     const dateString = formatDate(currentDate);
-                    console.log("dateString:", dateString)
+                    //console.log("dateString:", dateString)
 
                     // navigate in current date url
                     const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
@@ -126,7 +123,7 @@ let numPages = 0;
                     //console.log("navigated to product page");
 
                     // DEBUG find current url
-                    const currentUrl = await page.url();
+                    //const currentUrl = await page.url();
                     //console.log("current url:", currentUrl);
 
                     // access date that actually populates at url (will default to actual date if invalid)
@@ -141,18 +138,18 @@ let numPages = 0;
                     //console.log("input value prior:", inputValue);
                     const [month, day, year] = inputValue.split('-');
                     inputValue = `${year}-${month}-${day}`;
-                    console.log('inputValue:', inputValue);
+                    //console.log('inputValue:', inputValue);
 
                     if (inputValue == dateString) {
-                        console.log("valid date");
-                        await scrapeDutchDate(page, dateString, flowers);
-                        console.log("scraped date:", dateString);
+                        //console.log("valid date");
+                        flowers = await scrapeDutchDate(page, dateString, flowers);
+                        //console.log("scraped date:", dateString);
                         // increment date
                         currentDate = incrementDate(currentDate);
                         //console.log("incremented to date:", currentDate);
                         numDutchScrapes++;
                     } else {
-                        console.log("invalid date");
+                        //console.log("invalid date");
                         currentDate = incrementDate(currentDate);
                         //console.log("incremented to date:", currentDate);
                     }
@@ -168,11 +165,11 @@ let numPages = 0;
     } finally {
         if (browser) {
             await browser.close();
-            console.log("closed browser");
+            //console.log("closed browser");
         }
         // shutdown
-        console.log("scraped all data");
-        //console.log(JSON.stringify(flowers));
+        //console.log("scraped all data");
+        console.log(JSON.stringify(flowers));
     }  
 })();
 
@@ -195,7 +192,7 @@ function incrementDate(date) {
 
 async function scrapeAllDate(page, date, flowers) {
     // LIVE & LOCAL, MIAMI BOXLOT, FARM DIRECT
-    console.log("scraping all at date:", date);
+    //console.log("scraping all at date:", date);
 
     let hasNextPage = true;
     while (hasNextPage) {
@@ -221,23 +218,28 @@ async function scrapeAllDate(page, date, flowers) {
                 numPages += 1;
                 await page.click('ul.pagination li.page-item.active + li.page-item a.page-link');
                 await page.waitForNavigation();
-                console.log("next page", numPages);
+                //console.log("next page", numPages);
             }
         } catch (err) {
-            console.log("error during ALL pagination or scraping:", err);
+            console.error("error during ALL pagination or scraping:", err);
             hasNextPage = false;
         }
     }
+    return flowers;
 }
 
-async function extractFlowerData(page, flowerNames, date) {
-    console.log("extractFlowerData date arg:", date);
+async function extractFlowerData(page, flowerNames, currentDate) {
+    //console.log("extractFlowerData date arg:", date);
     try {
         await page.waitForSelector('.card-body.position-relative');
         //console.log("product loaded")
 
+        // format date to MM/DD/YYYY
+        const [year, month, day] = currentDate.split('-');
+        date = `${month}/${day}/${year}`;
+
         return await page.evaluate((flowerNames, date) => {
-            console.log("console: extractFlowerData date arg:", date);
+            //console.log("console: extractFlowerData date arg:", date);
             
             const items = document.querySelectorAll('.card-body.position-relative');
             //console.log("console: items selected")
@@ -289,28 +291,35 @@ async function extractFlowerData(page, flowerNames, date) {
                     //console.log("console: stems per ", stemsPer)
 
                     const pricePerUnitElement = item.querySelector('.price strong');
-                    const pricePerUnit = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '';        
+                    const pricePerUnitVal = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '0'; 
+                    const numericValue = pricePerUnitVal.match(/[\d.]+/);
+                    if (numericValue) {
+                        stemPrice = parseFloat(numericValue[0]).toFixed(2);
+                    } else {
+                        stemPrice = '0';
+                    }
+
+                    let prices = '0';
                     const priceElement = item.querySelector('.lot-price');
                     const price = priceElement ? priceElement.innerText.trim().replace('Price', '').trim() : '';
-                    const prices = [];
-                    if (pricePerUnit) prices.push(pricePerUnit.replace(' / stem', ' /ST'));
-                    if (price) prices.push(price.replace(' / bunch', ' /BU'));
-                    //console.log("console: format price", prices);
+                    if (price) prices = price.replace(' / bunch', ' /BU');
+                    //console.log("console: stem and price", stemPrice, prices);
 
+                    // delivery date
                     const delivery = date;
-                    //console.log("console: delivery, date", delivery, date);
-
+                    
                     flowersData.push({
                         flowerName,
                         flowerImage,
                         prices,
-                        color: 'N/A',
-                        height: 'N/A',
+                        stemPrice,
+                        color: " ",
+                        height: " ",
                         stemsPer,
                         seller: "Mayesh",
                         farm,
                         available,
-                        delivery,
+                        delivery
                     });
                 }
             });
@@ -326,13 +335,13 @@ async function scrapeDutchDate(page, date, flowers) {
     // navigate to product page
     //const productUrl = `https://www.mayesh.com/dutch-direct-boxlots?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${date}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=`;
     //await page.goto(productUrl);
-    console.log("navigated to dutch direct page")
+    //console.log("navigated to dutch direct page")
 
     let nextPageExist = true;
 
     while (nextPageExist) {
         try {
-            console.log("entered page loop")
+            //console.log("entered page loop")
             await page.waitForSelector('#view-list'); // wait for the product list to load
             //console.log("page loaded")
 
@@ -355,24 +364,29 @@ async function scrapeDutchDate(page, date, flowers) {
                 numPages += 1;
                 await page.click('ul.pagination li.page-item.active + li.page-item a.page-link');
                 await page.waitForNavigation();
-                console.log("next page", numPages);
+                //console.log("next page", numPages);
             }
         } catch (err) {
             console.error("error during dutch direct pagination or scraping:", err);
             nextPageExist = false;
         }
     }
+    return flowers;
 }
 
 
-async function extractDutchData(page, flowerNames, date) {
+async function extractDutchData(page, flowerNames, currentDate) {
     try {
         await page.waitForSelector('.card-body.position-relative');
         //console.log("product loaded")
 
+        // format date to MM/DD/YYYY
+        const [year, month, day] = currentDate.split('-');
+        date = `${month}/${day}/${year}`;
+
         return await page.evaluate((flowerNames, date) => {
             const items = document.querySelectorAll('.card-body.position-relative');
-            console.log("console: items selected")
+            //console.log("console: items selected")
             let flowersData = [];
 
             items.forEach(item => {
@@ -402,13 +416,19 @@ async function extractDutchData(page, flowerNames, date) {
                     //console.log("console: stems per ", stemsPer);
 
                     const pricePerUnitElement = item.querySelector('.price b');
-                    const pricePerUnit = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '';
+                    const pricePerUnitVal = pricePerUnitElement ? pricePerUnitElement.innerText.trim() : '0';
+                    const numericValue = pricePerUnitVal.match(/[\d.]+/);
+                    if (numericValue) {
+                        stemPrice = parseFloat(numericValue[0]).toFixed(2);
+                    } else {
+                        stemPrice = '0';
+                    }
+
+                    let prices = '0';
                     const priceElement = item.querySelector('.lot-price');
                     const price = priceElement ? priceElement.innerText.trim().replace('Price', '').trim() : '';
-                    const prices = [];
-                    if (pricePerUnit) prices.push(pricePerUnit.replace(' / stem', ' /ST'));
-                    if (price) prices.push(price.replace(' / box', ' /BX'));
-                    //console.log("console: format price", prices)
+                    if (price) prices = (price.replace(' / box', ' /BX'));
+                    //console.log("console: stem and price", stemPrice, prices);
 
                     // missing
                     // scrape height
@@ -416,12 +436,13 @@ async function extractDutchData(page, flowerNames, date) {
                     // const height = nameParts[nameParts.length - 1] || '';
 
                     const delivery = date;
-                    //console.log("console: delivery, date", delivery, date);
+                    //console.log("console: delivery, date", date);
 
                     flowersData.push({
                         flowerName,
                         flowerImage,
-                        prices, 
+                        prices,
+                        stemPrice, 
                         color: '',
                         height: '',
                         stemsPer,
@@ -435,7 +456,7 @@ async function extractDutchData(page, flowerNames, date) {
             return flowersData;
         }, flowerNames, date);
     } catch (err) {
-        console.log("error during dutch direct data extraction:", err);
+        console.error("error during dutch direct data extraction:", err);
         return [];
     }
 }

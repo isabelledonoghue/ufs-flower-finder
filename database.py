@@ -3,6 +3,7 @@ import sqlite3
 def setup_database():
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS flowers')
     with open('sql/schema.sql', 'r') as f:
         c.executescript(f.read())
     conn.commit()
@@ -13,8 +14,8 @@ def insert_data(data):
     c = conn.cursor()
     c.executemany('''
         INSERT INTO flowers (
-            flowerName, flowerImage, prices, color, height, stemsPer, seller, farm, available, delivery
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            flowerName, flowerImage, prices, stemPrice, color, height, stemsPer, seller, farm, available, delivery
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', data)
     conn.commit()
     conn.close()
