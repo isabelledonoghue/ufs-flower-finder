@@ -2,13 +2,47 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import subprocess
 import json
-from database import insert_data
+from database import insert_data, setup_database
 
 app = Flask(__name__)
+
+# call setup_database to ensure the database is set up correctly
+setup_database()
 
 @app.route('/')
 def index():
     return render_template('query.html')
+
+# renders results page
+@app.route('/results')
+def results():
+    return render_template('results.html')
+
+# returns results data from database
+@app.route('/results_data')
+def results_data():
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM flowers')
+    flowers_data = c.fetchall()
+    conn.close()
+    
+    return jsonify([
+        {
+            'flowerName': flower[1],
+            'flowerImage': flower[2],
+            'prices': flower[3],
+            'stemPrice': flower[4],
+            'color': flower[5],
+            'height': flower[6],
+            'stemsPer': flower[7],
+            'seller': flower[8],
+            'farm': flower[9],
+            'available': flower[10],
+            'delivery': flower[11]
+        }
+        for flower in flowers_data
+    ])
 
 
 # runs an individual scraper script
@@ -73,6 +107,14 @@ def scrape():
     # inserts scraped data into database
     insert_data(formatted_data)
     return jsonify({'message': 'Scraping completed successfully'})
+
+def clear_database():
+    try:
+        setup_database()
+        return jsonify({'message': 'Database cleared and schema recreated successfully'})
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        return jsonify({'error': 'Failed to clear and recreate the database'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

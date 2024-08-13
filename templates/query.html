@@ -9,39 +9,61 @@
 <body>
     <div class="container">
         <h1>New Request</h1>
-        <form id="queryForm">
+        <form id="queryForm" action="/submit" method="post">
             <div class="form-group">
-                <label for="deliveryDate">Delivery Date (YYYY-MM-DD):</label>
-                <input type="text" id="deliveryDate" name="deliveryDate" required>
+                <label for="deliveryDate">Delivery Date:</label>
+                <input type="text" id="deliveryDate" name="deliveryDate" placeholder="YYYY-MM-DD" required>
+                <div id="calendar" class="calendar">
+                    <div class="calendar-header">
+                        <button id="prevYear">«</button>
+                        <button id="prevMonth">‹</button>
+                        <span id="calendarMonthYear"></span>
+                        <button id="nextMonth">›</button>
+                        <button id="nextYear">»</button>
+                    </div>
+                    <div id="calendarBody"></div> 
+                </div>
             </div>
             <div class="form-group">
-                <label for="flowerNames">Flower Types:</label>
-                <select id="flowerNames" name="flowerNames" multiple required>
-                    <option value="STOCK">STOCK</option>
-                    <option value="SNAPDRAGON">SNAPDRAGON</option>
-                    <option value="SALAL">SALAL</option>
-                    <option value="DELPHINIUM">DELPHINIUM</option>
-                    <option value="ROSE">ROSE</option>
-                    <option value="CARNATION">CARNATION</option>
-                    <option value="LISIANTHUS">LISIANTHUS</option>
-                    <option value="SCABIOSA">SCABIOSA</option>
-                    <option value="MUMS">MUMS</option>
-                    <option value="RANUNCULUS">RANUNCULUS</option>
-                    <option value="ANEMONE">ANEMONE</option>
-                    <option value="EUCALYPTUS">EUCALYPTUS</option>
-                    <option value="RUSCUS">RUSCUS</option>
-                </select>
+                <label>Flower Types:</label>
+                <div class="dropdown" id="flowerDropdown">
+                    <button type="button" id="flowerButton">Select Flowers</button>
+                    <div class="dropdown-content">
+                        <label><input type="checkbox" name="flowerTypes" value="STOCK"> STOCK</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SNAPDRAGON"> SNAPDRAGON</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SALAL"> SALAL</label>
+                        <label><input type="checkbox" name="flowerTypes" value="DELPHINIUM"> DELPHINIUM</label>
+                        <label><input type="checkbox" name="flowerTypes" value="ROSE"> ROSE</label>
+                        <label><input type="checkbox" name="flowerTypes" value="CARNATION"> CARNATION</label>
+                        <label><input type="checkbox" name="flowerTypes" value="LISIANTHUS"> LISIANTHUS</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SCABIOSA"> SCABIOSA</label>
+                        <label><input type="checkbox" name="flowerTypes" value="MUMS"> MUMS</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RANUNCULUS"> RANUNCULUS</label>
+                        <label><input type="checkbox" name="flowerTypes" value="ANEMONE"> ANEMONE</label>
+                        <label><input type="checkbox" name="flowerTypes" value="EUCALYPTUS"> EUCALYPTUS</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RUSCUS"> RUSCUS</label>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
-                <label for="scripts">Wholesalers:</label>
-                <select id="scripts" name="scripts" multiple required>
-                    <option value="Mayesh">Mayesh</option>
-                    <option value="Kennicott">Kennicott</option>
-                    <option value="Holex">Holex</option>
-                </select>
+                <label>Wholesalers:</label>
+                <div class="dropdown" id="wholesalerDropdown">
+                    <button type="button" id="wholesalerButton">Select Wholesalers</button>
+                    <div class="dropdown-content">
+                        <label><input type="checkbox" name="wholesalers" value="mayesh"> Mayesh</label>
+                        <label><input type="checkbox" name="wholesalers" value="kennicott"> Kennicott</label>
+                        <label><input type="checkbox" name="wholesalers" value="holex"> Holex</label>
+                        <label><input type="checkbox" name="wholesalers" value="rooted"> Rooted Farmers</label>
+                    </div>
+                </div>
             </div>
             <button type="submit">Submit</button>
         </form>
+    </div>
+
+    <div id="loadingScreen" class="loading-screen hidden">
+        <p id="loadingMessage"></p>
+        <button id="cancelButton">Cancel Request</button>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

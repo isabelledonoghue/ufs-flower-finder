@@ -450,19 +450,7 @@ async function extractDutchData(page, flowerNames, currentDate) {
                     const delivery = date;
                     //console.log("console: delivery, date", date);
 
-                    flowersData.push({
-                        flowerName,
-                        flowerImage,
-                        prices,
-                        stemPrice, 
-                        color: '',
-                        height: '',
-                        stemsPer,
-                        seller: "Mayesh",
-                        farm: "DUTCH DIRECT",
-                        available: '',
-                        delivery,
-                    });
+ 
                 }
             });
             return flowersData;

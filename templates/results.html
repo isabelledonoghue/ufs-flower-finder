@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+<body>
+    <div id="results">
+        <h1>Request Results</h1>
+        
+        <div id="filters-container">
+            <div id="filters">
+                <label for="filterDeliveryDate">Filter by Delivery Date:</label>
+                <input type="text" id="filterDeliveryDate">
+                
+                <label for="filterSeller">Filter by Seller:</label>
+                <input type="text" id="filterSeller">
+
+                <label for="filterFarm">Filter by Farm:</label>
+                <input type="text" id="filterFarm">
+                
+                <label for="filterFlowerName">Filter by Flower Name:</label>
+                <input type="text" id="filterFlowerName">
+            </div>
+            
+            <div id="sorting">
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy">
+                    <option value="stemPriceAsc">Stem Price</option>
+                    <option value="deliveryDate">Delivery Date</option>
+                </select>
+            </div>
+        </div>
+        
+        <button id="applyFiltersButton">Apply Filters and Sort</button>
+        <button id="newRequestButton">New Request</button>
+
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Flower Name</th>
+                    <th>Flower Image</th>
+                    <th>Delivery</th>
+                    <th>Seller</th>
+                    <th>Farm</th>
+                    <th>Prices</th>
+                    <th>Stem Price</th>
+                    <th>Stems Per</th>
+                    <th>Available</th>
+                    <th>Color</th>
+                    <th>Height</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+</body>
+</html>
