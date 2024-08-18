@@ -108,6 +108,7 @@ def scrape():
     insert_data(formatted_data)
     return jsonify({'message': 'Scraping completed successfully'})
 
+@app.route('/clear_database', methods=['POST'])
 def clear_database():
     try:
         setup_database()
@@ -117,4 +118,4 @@ def clear_database():
         return jsonify({'error': 'Failed to clear and recreate the database'}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True)

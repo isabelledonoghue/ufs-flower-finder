@@ -83,19 +83,19 @@ h1 {
 }
 
 #applyFiltersButton {
-    background-color: #4CAF50;
+    background-color: #6CB26E;
 }
 
 #newRequestButton {
-    background-color: #f44336;
+    background-color: #B96477;
 }
 
 #newRequestButton:hover {
-    background-color: #d32f2f;
+    background-color: #8e4e5c;
 }
 
 #applyFiltersButton:hover {
-    background-color: #45a049;
+    background-color: #4a784c;
 }
 
 #resultsTable {
@@ -121,26 +121,112 @@ h1 {
     border-radius: 4px;
 }
 
-/* Hover effect for table rows */
 #resultsTable tr:hover {
     background-color: #f1f1f1;
 }
 
-/* Responsive design for smaller screens */
+/* responsive design for smaller screens */
+@media (max-width: 1040px) {
+    /* Hide columns if needed */
+    #resultsTable td:nth-child(11),
+    #resultsTable th:nth-child(11) { /* height */
+        display: none;
+    }
+}
+
+@media (max-width: 970px) {
+    /* Hide columns if needed */
+    #resultsTable td:nth-child(10),
+    #resultsTable th:nth-child(10) { /* color */
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    /* Hide columns if needed */
+    #resultsTable td:nth-child(9),
+    #resultsTable th:nth-child(9) { /* available */
+        display: none;
+    }
+}
+
+@media (max-width: 805px) {
+    /* Hide columns if needed */
+    #resultsTable td:nth-child(8),
+    #resultsTable th:nth-child(8) { /* stems per */
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
+    /* Hide column headers */
+    #resultsTable thead {
+        display: none;
+    }
+
+    /* Adjust table layout for small screens */
     #resultsTable {
-        font-size: 14px;
+        overflow-x: auto;
+        white-space: nowrap;
+        text-align: center;
     }
 
-    #resultsTable th, #resultsTable td {
-        padding: 8px;
+    /* Style table rows for small screens */
+    #resultsTable tr {
+        display: block;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        position: relative;
+        width: 80%;
+        margin: 0 auto 40px;
     }
 
-    #filters input {
-        font-size: 14px;
+    /* Label specific fields */
+    #resultsTable td:nth-child(1) {
+       font-weight: bold;
     }
 
-    #sorting select {
+    #resultsTable td:nth-child(3)::before {
+        content: "Delivery: ";
+        font-weight: bold;
+    }
+
+    #resultsTable td:nth-child(7)::before {
+        content: "Stem Price: ";
+        font-weight: bold;
+    }
+
+    /* Style for flower image */
+    #resultsTable td img {
+        max-width: 100px; /* Adjust size for mobile */
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Ensure consistent text styling */
+    #resultsTable td {
         font-size: 14px;
+        display: block;
+        text-align: center;
+    }
+
+    /* Stack filters and sorting sections vertically */
+    #filters-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    /* Adjust filters section width */
+    #filters {
+        width: 90%;
+        margin: 0 auto 10px; 
+    }
+    
+    /* Adjust sorting section width and position */
+    #sorting {
+        width: 100%;
+        margin: 0;
+        flex: none;
     }
 }

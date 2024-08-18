@@ -43,17 +43,32 @@ let numPages = 0;
 
         // FOR FRONTEND DEBUG
         flowers.push({
-            flowerName: '',
-            flowerImage: '',
-            prices: '',
-            stemPrice: '', 
-            color: '',
-            height: '',
-            stemsPer: '',
+            flowerName: 'ROSE',
+            flowerImage: 'https://cdn.pixabay.com/photo/2023/11/06/09/43/lotus-8369252_1280.jpg',
+            prices: '$12.00/BU, $1.20/ST',
+            stemPrice: '2.00', 
+            color: 'White',
+            height: '20 cm',
+            stemsPer: '120',
             seller: "Rooted Farmers",
-            farm: '',
-            available: '',
-            delivery: '',
+            farm: 'LIVE & LOCAL',
+            available: '10 BU',
+            delivery: '08/20/2024',
+        });
+
+        // FOR FRONTEND DEBUG
+        flowers.push({
+            flowerName: 'CARNATION',
+            flowerImage: 'https://cdn.pixabay.com/photo/2023/11/06/09/43/lotus-8369252_1280.jpg',
+            prices: '$12.00/BU, $1.50/ST',
+            stemPrice: '1.00', 
+            color: 'Red',
+            height: '10 cm',
+            stemsPer: '100',
+            seller: "Mayesh",
+            farm: 'Dutch Direct',
+            available: '20 BU',
+            delivery: '08/10/2024',
         });
 
     } catch (err) {

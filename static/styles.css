@@ -26,12 +26,12 @@ select, input[type="text"], button {
     margin-bottom: 10px;
 }
 button {
-    background-color: #4CAF50;
+    background-color: #6CB26E;
     color: white;
     cursor: pointer;
 }
 button:hover {
-    background-color: #45a049;
+    background-color: #4a784c;
 }
 
 /* QUERY DROPDOWN */
@@ -76,6 +76,11 @@ button:hover {
 }
 
 /* CALENDAR */
+#deliveryDate {
+    border: 2px solid #333;
+    width: 97%;
+}
+
 .calendar-header.hidden {
     display: none;
 }
@@ -167,7 +172,7 @@ button:hover {
 #cancelButton {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #f44336;
+    background-color: #B96477;
     color: white;
     border: none;
     cursor: pointer;
@@ -175,5 +180,5 @@ button:hover {
 }
 
 #cancelButton:hover {
-    background-color: #d32f2f;
+    background-color: #8e4e5c;
 }

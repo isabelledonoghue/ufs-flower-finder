@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
+            console.log('Results data received:', data);
             populateTable(data);
         } catch (error) {
             console.error('Fetch error:', error);
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newRequestButton.addEventListener('click', async () => {
         try {
             // send POST request to clear the database and recreate schema
-            const response = await fetch('/clear-database', {
+            const response = await fetch('/clear_database', {
                 method: 'POST'
             });
 
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // redirect to query page
+            console.log('Database cleared. Redirecting to query page...');
             window.location.href = '/';
         } catch (error) {
             console.error('Error:', error);
@@ -46,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateTable(data) {
         resultsTableBody.innerHTML = '';
         data.forEach(item => {
+            console.log('Adding row for flower:', item.flowerName);
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${item.flowerName}</td>
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.seller}</td>
                 <td>${item.farm}</td>
                 <td>${item.prices}</td>
-                <td>${item.stemPrice}</td>
+                <td>$${item.stemPrice}</td>
                 <td>${item.stemsPer}</td>
                 <td>${item.available}</td>
                 <td>${item.color}</td>
@@ -66,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyFilters() {
+        console.log('Applying filters...');
         const rows = resultsTableBody.querySelectorAll('tr');
         rows.forEach(row => {
             const deliveryDate = row.cells[2].textContent.toLowerCase();
@@ -111,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         rows.forEach(row => resultsTableBody.appendChild(row));
+        console.log('Table sorted by:', sortByValue);
     }
 
     // fetch results and set up filters

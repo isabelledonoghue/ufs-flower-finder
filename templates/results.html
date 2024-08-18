@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results</title>
+    <title>Flower Finder Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
 </head>
 <body>
     <div id="results">
-        <h1>Request Results</h1>
+        <h1>Flower Finder Results</h1>
         
         <div id="filters-container">
             <div id="filters">
                 <label for="filterDeliveryDate">Filter by Delivery Date:</label>
-                <input type="text" id="filterDeliveryDate">
+                <input type="text" id="filterDeliveryDate" placeholder="MM/DD/YYYY">
                 
                 <label for="filterSeller">Filter by Seller:</label>
                 <input type="text" id="filterSeller">

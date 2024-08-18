@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let abortController = null;
 
-
     // DROPDOWNS
     // handle dropdown button clicks
     flowerDropdownButton.addEventListener('click', () => {
@@ -115,6 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
         generateCalendar();
     });
 
+    deliveryDateInput.addEventListener('input', (event) => {
+        let value = event.target.value.replace(/\D/g, ''); // remove non-numeric characters
+        if (value.length > 4) {
+            value = value.slice(0, 4) + '-' + value.slice(4);
+        }
+        if (value.length > 7) {
+            value = value.slice(0, 7) + '-' + value.slice(7);
+        }
+        event.target.value = value;
+    });
+
     document.addEventListener('click', function(event) {
         if (!calendarDiv.contains(event.target) && !deliveryDateInput.contains(event.target)) {
             calendarDiv.style.display = 'none';
@@ -144,6 +154,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(checkbox => checkbox.value);
 
         try {
+            // clear database before starting new scrape
+            await fetch('/clear_database', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
             const response = await fetch('/scrape', {
                 method: 'POST',
                 headers: {
@@ -180,10 +198,27 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', handleFormSubmit);
 
     // cancel button functionality
-    cancelButton.addEventListener('click', () => {
+    cancelButton.addEventListener('click', async () => {
+        console.log('cancel button click');
+
         if (abortController) {
-            abortController.abort(); //  cancel current request
+            abortController.abort(); // cancel current request
+            console.log('Request aborted');
         }
+    
+        // clear the database
+        try {
+            await fetch('/clear_database', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('Database cleared');
+        } catch (error) {
+            console.error('failed to clear database:', error);
+        }
+    
         // hide loading screen and clear input fields
         loadingScreen.classList.add('hidden');
         deliveryDateInput.value = '';
@@ -191,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#wholesalerDropdown input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
         updateSelectedItems();
     });
+
 
     // close dropdown when clicking outside
     document.addEventListener('click', function(event) {
