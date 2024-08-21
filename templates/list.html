@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='list.css') }}">
+</head>
+<body>
+    <div id="header">
+        <button id="back-button">Back to Results</button>
+    </div>
+    <div id="shopping-list">
+        <h1>Shopping List</h1>
+        <table id="shoppingListTable">
+            <thead>
+                <tr>
+                    <th>Remove</th>
+                    <th>Flower Name</th>
+                    <th>Flower Image</th>
+                    <th>Delivery</th>
+                    <th>Seller</th>
+                    <th>Farm</th>
+                    <th>Prices</th>
+                    <th>Stem Price</th>
+                    <th>Stems Per</th>
+                    <th>Available</th>
+                    <th>Color</th>
+                    <th>Height</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='list.js') }}"></script>
+</body>
+</html>

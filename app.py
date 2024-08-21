@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import subprocess
 import json
-from database import insert_data, setup_database
+from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list
 
 app = Flask(__name__)
 
@@ -17,6 +17,10 @@ def index():
 @app.route('/results')
 def results():
     return render_template('results.html')
+
+@app.route('/list')
+def list_view():
+    return render_template('list.html')
 
 # returns results data from database
 @app.route('/results_data')
@@ -108,6 +112,7 @@ def scrape():
     insert_data(formatted_data)
     return jsonify({'message': 'Scraping completed successfully'})
 
+
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
     try:
@@ -117,5 +122,52 @@ def clear_database():
         print(f"Error clearing database: {e}")
         return jsonify({'error': 'Failed to clear and recreate the database'}), 500
 
+
+
+
+
+
+@app.route('/shopping_list_data')
+def shopping_list_data():
+    items = get_shopping_list()
+    return jsonify([
+        {
+            'flowerName': item[1],
+            'flowerImage': item[2],
+            'prices': item[3],
+            'stemPrice': item[4],
+            'color': item[5],
+            'height': item[6],
+            'stemsPer': item[7],
+            'seller': item[8],
+            'farm': item[9],
+            'available': item[10],
+            'delivery': item[11],
+            'id': item[0]
+        }
+        for item in items
+    ])
+
+@app.route('/add_to_shopping_list', methods=['POST'])
+def add_to_shopping_list_view():
+    flower_id = request.json.get('flowerId')
+    if not flower_id:
+        return jsonify({'error': 'Flower ID is required'}), 400
+    add_to_shopping_list(flower_id)
+    return jsonify({'message': 'Item added to shopping list'})
+
+
+@app.route('/remove_from_shopping_list', methods=['POST'])
+def remove_from_shopping_list_view():
+    flower_id = request.json.get('flowerId')
+    if not flower_id:
+        return jsonify({'error': 'Flower ID is required'}), 400
+    remove_from_shopping_list(flower_id)
+    return jsonify({'message': 'Item removed from shopping list'})
+
+
+
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

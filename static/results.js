@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyFiltersButton = document.getElementById('applyFiltersButton');
     const sortBy = document.getElementById('sortBy');
 
+    let shoppingList = JSON.parse(localStorage.getItem('shoppingList')) || [];
+
     async function fetchResults() {
         try {
             const response = await fetch('/results_data');
@@ -51,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Adding row for flower:', item.flowerName);
             const row = document.createElement('tr');
             row.innerHTML = `
+                <td><button class="toggle-list" data-flower-id="${item.id}" style="background-color: green; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">+</button></td>
                 <td>${item.flowerName}</td>
                 <td><img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;"></td>
                 <td>${item.delivery}</td>
@@ -66,6 +69,45 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsTableBody.appendChild(row);
         });
         applyFilters();
+        addToggleEventListeners();
+    }
+
+    function addToggleEventListeners() {
+        document.querySelectorAll('.toggle-list').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const flowerId = e.target.getAttribute('data-flower-id');
+                
+                if (e.target.style.backgroundColor === 'green') {
+                    shoppingList.push(flowerId);
+                    e.target.style.backgroundColor = 'red';
+                    e.target.textContent = '-';
+                } else {
+                    shoppingList = shoppingList.filter(id => id !== flowerId);
+                    e.target.style.backgroundColor = 'green';
+                    e.target.textContent = '+';
+                }
+                
+                localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+                updateListPage();
+            });
+        });
+    }
+
+    function updateListPage() {
+        fetch('/update_shopping_list', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ shoppingList })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Shopping list updated:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
 
     function applyFilters() {
@@ -98,18 +140,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function sortTable() {
         const rows = Array.from(resultsTableBody.querySelectorAll('tr'));
         const sortByValue = sortBy.value;
+
+        if (sortByValue === '') {
+            return;
+        }
         
         rows.sort((a, b) => {
-            const aCell = a.querySelector('td');
-            const bCell = b.querySelector('td');
+            let aValue, bValue;
 
             if (sortByValue === 'stemPriceAsc') {
-                return parseFloat(aCell.textContent) - parseFloat(bCell.textContent);
+                console.log("sorting by price");
+                aValue = parseFloat(a.querySelector('td:nth-child(7)').textContent.replace('$', ''));
+                bValue = parseFloat(b.querySelector('td:nth-child(7)').textContent.replace('$', ''));
+                return aValue - bValue;
             } else if (sortByValue === 'deliveryDate') {
-                const today = new Date();
-                const aDate = new Date(aCell.textContent);
-                const bDate = new Date(bCell.textContent);
-                return Math.abs(today - aDate) - Math.abs(today - bDate);
+                console.log("sorting by delivery date");
+                aValue = new Date(a.querySelector('td:nth-child(3)').textContent);
+                bValue = new Date(b.querySelector('td:nth-child(3)').textContent);
+                return aValue - bValue;
             }
             return 0;
         });

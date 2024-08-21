@@ -1,0 +1,62 @@
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* styling for back button */
+#header {
+    text-align: left;
+    margin: 20px;
+}
+
+#back-button {
+    background-color: #B96477;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#back-button:hover {
+    background-color: #8e4e5c;
+}
+
+/* list table */
+
+#shoppingListTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#shoppingListTable th, #shoppingListTable td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+#shoppingListTable th {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+#shoppingListTable td img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 4px;
+}
+
+#shoppingListTable tr:hover {
+    background-color: #f1f1f1;
+}
+

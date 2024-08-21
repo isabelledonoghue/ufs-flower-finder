@@ -9,6 +9,12 @@
 <body>
     <div id="results">
         <h1>Flower Finder Results</h1>
+
+        <div class="shopping-list-container">
+            <a href="/list">
+                <img src="{{ url_for('static', filename='cart.png') }}" alt="Shopping List">
+            </a>
+        </div>
         
         <div id="filters-container">
             <div id="filters">
@@ -28,6 +34,7 @@
             <div id="sorting">
                 <label for="sortBy">Sort By:</label>
                 <select id="sortBy">
+                    <option value="">Select Sort Option</option>
                     <option value="stemPriceAsc">Stem Price</option>
                     <option value="deliveryDate">Delivery Date</option>
                 </select>
@@ -40,6 +47,7 @@
         <table id="resultsTable">
             <thead>
                 <tr>
+                    <th>Add to List</th>
                     <th>Flower Name</th>
                     <th>Flower Image</th>
                     <th>Delivery</th>
