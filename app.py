@@ -33,6 +33,7 @@ def results_data():
     
     return jsonify([
         {
+            'id': flower[0],
             'flowerName': flower[1],
             'flowerImage': flower[2],
             'prices': flower[3],
@@ -153,6 +154,7 @@ def add_to_shopping_list_view():
     flower_id = request.json.get('flowerId')
     if not flower_id:
         return jsonify({'error': 'Flower ID is required'}), 400
+    print(f"Added flower ID {flower_id} to shopping list.")
     add_to_shopping_list(flower_id)
     return jsonify({'message': 'Item added to shopping list'})
 
@@ -163,10 +165,20 @@ def remove_from_shopping_list_view():
     if not flower_id:
         return jsonify({'error': 'Flower ID is required'}), 400
     remove_from_shopping_list(flower_id)
+    print(f"Removed flower ID {flower_id} from shopping list.")
     return jsonify({'message': 'Item removed from shopping list'})
 
-
-
+@app.route('/is_in_shopping_list', methods=['POST'])
+def is_in_shopping_list():
+    flower_id = request.json.get('flowerId')
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT COUNT(*) FROM shopping_list WHERE flower_id = ?
+    ''', (flower_id,))
+    is_in_list = c.fetchone()[0] > 0
+    conn.close()
+    return jsonify({'isInList': is_in_list})
 
 
 if __name__ == "__main__":

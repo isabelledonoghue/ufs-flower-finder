@@ -33,6 +33,9 @@ button {
 button:hover {
     background-color: #4a784c;
 }
+#submit {
+    border: none;
+}
 
 /* QUERY DROPDOWN */
 .dropdown {

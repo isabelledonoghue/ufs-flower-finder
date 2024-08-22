@@ -53,7 +53,7 @@ let numPages = 0;
             seller: "Rooted Farmers",
             farm: 'LIVE & LOCAL',
             available: '10 BU',
-            delivery: '08/20/2024',
+            delivery: '08/10/2024',
         });
 
         // FOR FRONTEND DEBUG
@@ -68,7 +68,7 @@ let numPages = 0;
             seller: "Mayesh",
             farm: 'Dutch Direct',
             available: '20 BU',
-            delivery: '08/10/2024',
+            delivery: '08/20/2024',
         });
 
     } catch (err) {

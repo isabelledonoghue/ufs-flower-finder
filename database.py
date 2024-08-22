@@ -21,9 +21,6 @@ def insert_data(data):
     conn.commit()
     conn.close()
 
-
-
-
 def add_to_shopping_list(flower_id):
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
@@ -53,10 +50,9 @@ def get_shopping_list():
         JOIN flowers f ON sl.flower_id = f.id
     ''')
     items = c.fetchall()
+    print("Items fetched from database:", items)
     conn.close()
     return items
-
-
 
 
 if __name__ == "__main__":

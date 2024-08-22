@@ -20,34 +20,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateTable(data) {
+        const emptyStateMessage = document.getElementById('empty-state-message');
+        const shoppingListTable = document.getElementById('shoppingListTable');
         shoppingListTableBody.innerHTML = '';
-        data.forEach(item => {
-            console.log('Adding row for flower:', item.flowerName);
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><button class="remove-from-list" data-flower-id="${item.id}" style="background-color: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">-</button></td>
-                <td>${item.flowerName}</td>
-                <td><img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;"></td>
-                <td>${item.delivery}</td>
-                <td>${item.seller}</td>
-                <td>${item.farm}</td>
-                <td>${item.prices}</td>
-                <td>$${item.stemPrice}</td>
-                <td>${item.stemsPer}</td>
-                <td>${item.available}</td>
-                <td>${item.color}</td>
-                <td>${item.height}</td>
-            `;
-            shoppingListTableBody.appendChild(row);
-        });
-        addRemoveEventListeners();
+        if (data.length === 0) {
+            emptyStateMessage.classList.add('visible');
+            shoppingListTable.style.display = 'none';
+        } else {
+            emptyStateMessage.classList.remove('visible');
+            shoppingListTable.style.display = 'table';
+            data.forEach(item => {
+                console.log('Adding row for flower:', item.flowerName);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><button class="remove-from-list" data-flower-id="${item.id}" style="background-color: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">-</button></td>
+                    <td>${item.flowerName}</td>
+                    <td><img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;"></td>
+                    <td>${item.delivery}</td>
+                    <td>${item.seller}</td>
+                    <td>${item.farm}</td>
+                    <td>${item.prices}</td>
+                    <td>$${item.stemPrice}</td>
+                    <td>${item.stemsPer}</td>
+                    <td>${item.available}</td>
+                    <td>${item.color}</td>
+                    <td>${item.height}</td>
+                `;
+                shoppingListTableBody.appendChild(row);
+            });
+            addRemoveEventListeners();
+        }
     }
 
     function addRemoveEventListeners() {
         document.querySelectorAll('.remove-from-list').forEach(button => {
             button.addEventListener('click', (e) => {
                 const flowerId = e.target.getAttribute('data-flower-id');
-
                 fetch('/remove_from_shopping_list', {
                     method: 'POST',
                     headers: {

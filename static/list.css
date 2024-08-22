@@ -14,7 +14,7 @@ h1 {
 /* styling for back button */
 #header {
     text-align: left;
-    margin: 20px;
+    margin: 30px;
 }
 
 #back-button {
@@ -60,3 +60,14 @@ h1 {
     background-color: #f1f1f1;
 }
 
+#empty-state-message {
+    display: none;
+    text-align: center;
+    margin: 50px;
+    font-size: 18px;
+    color: gray;
+}
+
+#empty-state-message.visible {
+    display: block;
+}

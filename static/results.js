@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyFiltersButton = document.getElementById('applyFiltersButton');
     const sortBy = document.getElementById('sortBy');
 
-    let shoppingList = JSON.parse(localStorage.getItem('shoppingList')) || [];
-
     async function fetchResults() {
         try {
             const response = await fetch('/results_data');
@@ -47,13 +45,28 @@ document.addEventListener('DOMContentLoaded', () => {
         sortTable();
     });
 
-    function populateTable(data) {
+    async function populateTable(data) {
         resultsTableBody.innerHTML = '';
-        data.forEach(item => {
+        for (const item of data) {
             console.log('Adding row for flower:', item.flowerName);
+            
+            // check if item is in shopping list
+            const response = await fetch('/is_in_shopping_list', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ flowerId: item.id })
+            });
+            const result = await response.json();
+            const isInList = result.isInList;
+
+            const buttonColor = isInList ? 'red' : 'green';
+            const buttonText = isInList ? '-' : '+';
+            
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><button class="toggle-list" data-flower-id="${item.id}" style="background-color: green; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">+</button></td>
+                <td><button class="toggle-list" data-flower-id="${item.id}" style="background-color: ${buttonColor}; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">${buttonText}</button></td>
                 <td>${item.flowerName}</td>
                 <td><img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;"></td>
                 <td>${item.delivery}</td>
@@ -67,46 +80,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.height}</td>
             `;
             resultsTableBody.appendChild(row);
-        });
+        }
         applyFilters();
         addToggleEventListeners();
     }
 
     function addToggleEventListeners() {
         document.querySelectorAll('.toggle-list').forEach(button => {
-            button.addEventListener('click', (e) => {
+            button.addEventListener('click', async (e) => {
                 const flowerId = e.target.getAttribute('data-flower-id');
-                
-                if (e.target.style.backgroundColor === 'green') {
-                    shoppingList.push(flowerId);
-                    e.target.style.backgroundColor = 'red';
-                    e.target.textContent = '-';
-                } else {
-                    shoppingList = shoppingList.filter(id => id !== flowerId);
-                    e.target.style.backgroundColor = 'green';
-                    e.target.textContent = '+';
-                }
-                
-                localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
-                updateListPage();
-            });
-        });
-    }
+                console.log('Flower ID clicked:', flowerId);
 
-    function updateListPage() {
-        fetch('/update_shopping_list', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ shoppingList })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Shopping list updated:', data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
+                if (e.target.style.backgroundColor === 'green') {
+                    // add to list
+                    try {
+                        const response = await fetch('/add_to_shopping_list', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ flowerId })
+                        });
+                        const data = await response.json();
+                        console.log('Item added:', data);
+                        e.target.style.backgroundColor = 'red';
+                        e.target.textContent = '-';
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                } else {
+                    // remove from list
+                    try {
+                        const response = await fetch('/remove_from_shopping_list', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ flowerId })
+                        });
+                        const data = await response.json();
+                        console.log('Item removed:', data);
+                        e.target.style.backgroundColor = 'green';
+                        e.target.textContent = '+';
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            });
         });
     }
 
@@ -114,10 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Applying filters...');
         const rows = resultsTableBody.querySelectorAll('tr');
         rows.forEach(row => {
-            const deliveryDate = row.cells[2].textContent.toLowerCase();
-            const seller = row.cells[3].textContent.toLowerCase();
-            const farm = row.cells[4].textContent.toLowerCase();
-            const flowerName = row.cells[0].textContent.toLowerCase();
+            const deliveryDate = row.cells[3].textContent.toLowerCase();
+            const seller = row.cells[4].textContent.toLowerCase();
+            const farm = row.cells[5].textContent.toLowerCase();
+            const flowerName = row.cells[6].textContent.toLowerCase();
 
             const deliveryDateFilter = filterDeliveryDate.value.toLowerCase();
             const sellerFilter = filterSeller.value.toLowerCase();
@@ -150,13 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (sortByValue === 'stemPriceAsc') {
                 console.log("sorting by price");
-                aValue = parseFloat(a.querySelector('td:nth-child(7)').textContent.replace('$', ''));
-                bValue = parseFloat(b.querySelector('td:nth-child(7)').textContent.replace('$', ''));
+                aValue = parseFloat(a.querySelector('td:nth-child(8)').textContent.replace('$', ''));
+                bValue = parseFloat(b.querySelector('td:nth-child(8)').textContent.replace('$', ''));
                 return aValue - bValue;
             } else if (sortByValue === 'deliveryDate') {
                 console.log("sorting by delivery date");
-                aValue = new Date(a.querySelector('td:nth-child(3)').textContent);
-                bValue = new Date(b.querySelector('td:nth-child(3)').textContent);
+                aValue = new Date(a.querySelector('td:nth-child(4)').textContent);
+                bValue = new Date(b.querySelector('td:nth-child(4)').textContent);
                 return aValue - bValue;
             }
             return 0;
