@@ -15,20 +15,28 @@
                 <img src="{{ url_for('static', filename='cart.png') }}" alt="Shopping List">
             </a>
         </div>
+
+        <button id="newRequestButton">New Request</button>
         
         <div id="filters-container">
             <div id="filters">
                 <label for="filterDeliveryDate">Filter by Delivery Date:</label>
                 <input type="text" id="filterDeliveryDate" placeholder="MM/DD/YYYY">
-                
+
                 <label for="filterSeller">Filter by Seller:</label>
-                <input type="text" id="filterSeller">
+                <select id="filterSeller">
+                    <option value="">Select Seller</option>
+                </select>
 
                 <label for="filterFarm">Filter by Farm:</label>
-                <input type="text" id="filterFarm">
+                <select id="filterFarm">
+                    <option value="">Select Farm</option>
+                </select>
                 
                 <label for="filterFlowerName">Filter by Flower Name:</label>
-                <input type="text" id="filterFlowerName">
+                <select id="filterFlowerName">
+                    <option value="">Select Flower Name</option>
+                </select>
             </div>
             
             <div id="sorting">
@@ -42,7 +50,7 @@
         </div>
         
         <button id="applyFiltersButton">Apply Filters and Sort</button>
-        <button id="newRequestButton">New Request</button>
+        <button id="removeFiltersButton">Remove Filters and Sort</button>
 
         <table id="resultsTable">
             <thead>

@@ -29,19 +29,23 @@
                 <div class="dropdown" id="flowerDropdown">
                     <button type="button" id="flowerButton">Select Flowers</button>
                     <div class="dropdown-content">
-                        <label><input type="checkbox" name="flowerTypes" value="STOCK"> STOCK</label>
-                        <label><input type="checkbox" name="flowerTypes" value="SNAPDRAGON"> SNAPDRAGON</label>
-                        <label><input type="checkbox" name="flowerTypes" value="SALAL"> SALAL</label>
-                        <label><input type="checkbox" name="flowerTypes" value="DELPHINIUM"> DELPHINIUM</label>
-                        <label><input type="checkbox" name="flowerTypes" value="ROSE"> ROSE</label>
-                        <label><input type="checkbox" name="flowerTypes" value="CARNATION"> CARNATION</label>
-                        <label><input type="checkbox" name="flowerTypes" value="LISIANTHUS"> LISIANTHUS</label>
-                        <label><input type="checkbox" name="flowerTypes" value="SCABIOSA"> SCABIOSA</label>
-                        <label><input type="checkbox" name="flowerTypes" value="MUMS"> MUMS</label>
-                        <label><input type="checkbox" name="flowerTypes" value="RANUNCULUS"> RANUNCULUS</label>
-                        <label><input type="checkbox" name="flowerTypes" value="ANEMONE"> ANEMONE</label>
-                        <label><input type="checkbox" name="flowerTypes" value="EUCALYPTUS"> EUCALYPTUS</label>
-                        <label><input type="checkbox" name="flowerTypes" value="RUSCUS"> RUSCUS</label>
+                        <div class="button-group">
+                            <button type="button" class="select-all" data-group="flowerTypes">Select All</button>
+                            <button type="button" class="deselect-all" data-group="flowerTypes">Deselect All</button>
+                        </div>
+                        <label><input type="checkbox" name="flowerTypes" value="ANEMONE"> Anemone</label>
+                        <label><input type="checkbox" name="flowerTypes" value="CARNATION"> Carnation</label>
+                        <label><input type="checkbox" name="flowerTypes" value="DELPHINIUM"> Delphinium</label>
+                        <label><input type="checkbox" name="flowerTypes" value="EUCALYPTUS"> Eucalyptus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="LISIANTHUS"> Lisianthus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="MUMS"> Mums</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RANUNCULUS"> Ranunculus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="ROSE"> Rose</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RUSCUS"> Ruscus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SCABIOSA"> Scabiosa</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SNAPDRAGON"> Snapdragon</label>
+                        <label><input type="checkbox" name="flowerTypes" value="STOCK"> Stock</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SALAL"> Salal</label>                        
                     </div>
                 </div>
             </div>
@@ -50,6 +54,10 @@
                 <div class="dropdown" id="wholesalerDropdown">
                     <button type="button" id="wholesalerButton">Select Wholesalers</button>
                     <div class="dropdown-content">
+                        <div class="button-group">
+                            <button type="button" class="select-all" data-group="wholesalers">Select All</button>
+                            <button type="button" class="deselect-all" data-group="wholesalers">Deselect All</button>
+                        </div>
                         <label><input type="checkbox" name="wholesalers" value="mayesh"> Mayesh</label>
                         <label><input type="checkbox" name="wholesalers" value="kennicott"> Kennicott</label>
                         <label><input type="checkbox" name="wholesalers" value="holex"> Holex</label>

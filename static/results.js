@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterFlowerName = document.getElementById('filterFlowerName');
     const newRequestButton = document.getElementById('newRequestButton');
     const applyFiltersButton = document.getElementById('applyFiltersButton');
+    const removeFiltersButton = document.getElementById('removeFiltersButton'); // Added remove filters button
     const sortBy = document.getElementById('sortBy');
 
     async function fetchResults() {
@@ -15,11 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
             console.log('Results data received:', data);
+
+            populateFilters(data);
             populateTable(data);
         } catch (error) {
             console.error('Fetch error:', error);
         }
     }
+
 
     newRequestButton.addEventListener('click', async () => {
         try {
@@ -43,6 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFiltersButton.addEventListener('click', () => {
         applyFilters();
         sortTable();
+    });
+
+    removeFiltersButton.addEventListener('click', () => {
+        resetFiltersAndSort();
     });
 
     async function populateTable(data) {
@@ -133,16 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyFilters() {
         console.log('Applying filters...');
         const rows = resultsTableBody.querySelectorAll('tr');
+        const deliveryDateFilter = filterDeliveryDate.value.toLowerCase();
+        const sellerFilter = filterSeller.value.toLowerCase();
+        const farmFilter = filterFarm.value.toLowerCase();
+        const flowerNameFilter = filterFlowerName.value.toLowerCase();
+
         rows.forEach(row => {
             const deliveryDate = row.cells[3].textContent.toLowerCase();
             const seller = row.cells[4].textContent.toLowerCase();
             const farm = row.cells[5].textContent.toLowerCase();
-            const flowerName = row.cells[6].textContent.toLowerCase();
-
-            const deliveryDateFilter = filterDeliveryDate.value.toLowerCase();
-            const sellerFilter = filterSeller.value.toLowerCase();
-            const farmFilter = filterFarm.value.toLowerCase();
-            const flowerNameFilter = filterFlowerName.value.toLowerCase();
+            const flowerName = row.cells[1].textContent.toLowerCase();
 
             if (
                 (deliveryDate.includes(deliveryDateFilter) || deliveryDateFilter === '') &&
@@ -155,6 +163,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.style.display = 'none';
             }
         });
+    }
+
+    function populateFilters(data) {
+        const sellerSelect = document.getElementById('filterSeller');
+        const farmSelect = document.getElementById('filterFarm');
+        const flowerNameSelect = document.getElementById('filterFlowerName');
+    
+        const sellers = new Set();
+        const farms = new Set();
+        const flowerNames = new Set();
+    
+        data.forEach(item => {
+            sellers.add(item.seller);
+            farms.add(item.farm);
+            flowerNames.add(item.flowerName);
+        });
+    
+        populateSelect(sellerSelect, sellers);
+        populateSelect(farmSelect, farms);
+        populateSelect(flowerNameSelect, flowerNames);
+    }
+    
+    function populateSelect(selectElement, optionsSet) {
+        selectElement.innerHTML = '<option value="">Select Option</option>';
+        optionsSet.forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = optionValue;
+            option.textContent = optionValue;
+            selectElement.appendChild(option);
+        });
+    }
+
+    function resetFiltersAndSort() {
+        console.log('Resetting filters and sort...');
+        
+        // clear filter inputs
+        filterDeliveryDate.value = '';
+        filterSeller.value = '';
+        filterFarm.value = '';
+        filterFlowerName.value = '';
+        sortBy.value = '';
+    
+        fetchResults();
     }
 
     function sortTable() {

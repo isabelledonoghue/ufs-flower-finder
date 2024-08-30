@@ -47,11 +47,14 @@ button:hover {
 .dropdown button {
     width: 100%;
     padding: 8px;
-    background-color: #f9f9f9;
     color: black;
     cursor: pointer;
     text-align: left;
     border-radius: 1px;
+}
+
+#wholesalerButton, #flowerButton {
+    background-color: #f9f9f9;
 }
 
 .dropdown-content {
@@ -63,6 +66,38 @@ button:hover {
     z-index: 1;
     max-height: 200px;
     overflow-y: auto;
+}
+
+.dropdown-content .button-group {
+    display: flex; /* Use flexbox to arrange buttons in a row */
+    justify-content: space-between;
+    padding: 5px 10px;
+}
+
+.dropdown-content .button-group button {
+    flex: 1; /* Make buttons take up equal space */
+    margin: 0 5px; /* Add margin between buttons */
+    border: none; /* Remove border */
+    padding: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+.select-all {
+    background-color: #6CB26E; 
+}
+
+.deselect-all {
+    background-color: #B96477;
+}
+
+.select-all:hover {
+    background-color: #4a784c;
+}
+
+.deselect-all:hover {
+    background-color: #8e4e5c;
 }
 
 .dropdown-content label {

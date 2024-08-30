@@ -21,6 +21,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropdown = document.querySelector('#wholesalerDropdown .dropdown-content');
         dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
     });
+        // Handle "Select All" and "Deselect All" buttons
+        document.querySelectorAll('.select-all').forEach(button => {
+            button.addEventListener('click', () => {
+                const group = button.getAttribute('data-group');
+                document.querySelectorAll(`input[name="${group}"]`).forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                updateSelectedItems(); // Update button text to reflect changes
+            });
+        });
+    
+        document.querySelectorAll('.deselect-all').forEach(button => {
+            button.addEventListener('click', () => {
+                const group = button.getAttribute('data-group');
+                document.querySelectorAll(`input[name="${group}"]`).forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelectedItems(); // Update button text to reflect changes
+            });
+        });
     // function to display selected query items
     function updateSelectedItems() {
         const flowerCheckboxes = document.querySelectorAll('#flowerDropdown input[name="flowerTypes"]:checked');
@@ -144,14 +164,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // gather request arguments
         const deliveryDate = deliveryDateInput.value;
-        const flowerCheckboxes = document.querySelectorAll('#flowerDropdown input[type="checkbox"]');
-        const flowerNames = Array.from(flowerCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
-        const wholesalerCheckboxes = document.querySelectorAll('#wholesalerDropdown input[type="checkbox"]');
-        const scripts = Array.from(wholesalerCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
+        const flowerCheckboxes = document.querySelectorAll('#flowerDropdown input[name="flowerTypes"]');
+        const selectedFlowers = Array.from(flowerCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
+        const allFlowers = Array.from(flowerCheckboxes).map(checkbox => checkbox.value); // Get all flower types
+        const wholesalersCheckboxes = document.querySelectorAll('#wholesalerDropdown input[name="wholesalers"]');
+        const selectedWholesalers = Array.from(wholesalersCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
+        const allWholesalers = Array.from(wholesalersCheckboxes).map(checkbox => checkbox.value); // Get all wholesalers
+        
+        const flowerNames = selectedFlowers.length > 0 ? selectedFlowers : allFlowers;
+        const scripts = selectedWholesalers.length > 0 ? selectedWholesalers : allWholesalers;
+            
 
         try {
             // clear database before starting new scrape
