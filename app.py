@@ -122,11 +122,7 @@ def clear_database():
     except Exception as e:
         print(f"Error clearing database: {e}")
         return jsonify({'error': 'Failed to clear and recreate the database'}), 500
-
-
-
-
-
+    
 
 @app.route('/shopping_list_data')
 def shopping_list_data():
@@ -179,6 +175,19 @@ def is_in_shopping_list():
     is_in_list = c.fetchone()[0] > 0
     conn.close()
     return jsonify({'isInList': is_in_list})
+
+@app.route('/clear_shopping_list', methods=['POST'])
+def clear_shopping_list():
+    try:
+        conn = sqlite3.connect('flowers.db')
+        c = conn.cursor()
+        c.execute('DELETE FROM shopping_list')
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Shopping list cleared successfully'})
+    except Exception as e:
+        print(f"Error clearing shopping list: {e}")
+        return jsonify({'error': 'Failed to clear shopping list'}), 500
 
 
 if __name__ == "__main__":

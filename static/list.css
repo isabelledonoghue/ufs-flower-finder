@@ -11,13 +11,20 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* styling for back button */
+/* styling for buttons */
 #header {
     text-align: left;
     margin: 30px;
 }
 
-#back-button {
+#button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+#back-button, #clear-cart {
     background-color: #B96477;
     color: white;
     border: none;
@@ -27,8 +34,22 @@ h1 {
     font-size: 16px;
 }
 
-#back-button:hover {
+#back-button:hover, #clear-cart:hover {
     background-color: #8e4e5c;
+}
+
+#save-cart {
+    background-color: #6CB26E;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#save-cart:hover {
+    background-color: #4a784c;
 }
 
 /* list table */
@@ -70,4 +91,107 @@ h1 {
 
 #empty-state-message.visible {
     display: block;
+}
+
+
+/* Responsive design for smaller screens */
+@media (max-width: 1300px) {
+    .shopping-list-container {
+        right: 50px;
+    }
+}
+
+@media (max-width: 1105px) {
+    /* Hide columns if needed */
+    #shoppingListTable td:nth-child(12),
+    #shoppingListTable th:nth-child(12) { /* height */
+        display: none;
+    }
+}
+
+@media (max-width: 1030px) {
+    /* Hide columns if needed */
+    #shoppingListTable td:nth-child(11),
+    #shoppingListTable th:nth-child(11) { /* color */
+        display: none;
+    }
+}
+
+@media (max-width: 970px) {
+    /* Hide columns if needed */
+    #shoppingListTable td:nth-child(10),
+    #shoppingListTable th:nth-child(10) { /* available */
+        display: none;
+    }
+}
+
+@media (max-width: 870px) {
+    /* Hide columns if needed */
+    #shoppingListTable td:nth-child(9),
+    #shoppingListTable th:nth-child(9) { /* stems per */
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    h1 {
+        margin-top: 40px;
+    }
+
+    /* Hide column headers */
+    #shoppingListTable thead {
+        display: none;
+    }
+
+    #table-container {
+        width: 100%;
+        padding: 0 10px;
+        margin: 0 auto;
+    }
+
+    #shoppingListTable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* Style table rows for small screens */
+    #shoppingListTable tr {
+        display: block;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        position: relative;
+        margin: 0 auto 40px;
+        box-sizing: border-box;
+    }
+
+    /* Label specific fields */
+    #shoppingListTable td:nth-child(2)::before {
+        content: "Flower Name: ";
+        font-weight: bold;
+    }
+
+    #shoppingListTable td:nth-child(4)::before {
+        content: "Delivery: ";
+        font-weight: bold;
+    }
+
+    #shoppingListTable td:nth-child(8)::before {
+        content: "Stem Price: ";
+        font-weight: bold;
+    }
+
+    /* Style for flower image */
+    #shoppingListTable td img {
+        max-width: 100px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Ensure consistent text styling */
+    #shoppingListTable td {
+        font-size: 14px;
+        display: block;
+        text-align: center;
+    }
 }

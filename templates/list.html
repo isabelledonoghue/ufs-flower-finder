@@ -12,27 +12,20 @@
     </div>
     <div id="shopping-list">
         <h1>Shopping List</h1>
+
+        <div id="button-container">
+            <button id="save-cart">Save Cart</button>
+            <button id="clear-cart">Clear Cart</button>
+        </div>
+
         <div id="empty-state-message">Your shopping list is empty.</div>
-        <table id="shoppingListTable">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Flower Name</th>
-                    <th>Flower Image</th>
-                    <th>Delivery</th>
-                    <th>Seller</th>
-                    <th>Farm</th>
-                    <th>Prices</th>
-                    <th>Stem Price</th>
-                    <th>Stems Per</th>
-                    <th>Available</th>
-                    <th>Color</th>
-                    <th>Height</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+
+        <div id="table-container">
+            <table id="shoppingListTable">
+                <thead></thead>
+                <tbody></tbody>           
+            </table>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='list.js') }}"></script>
