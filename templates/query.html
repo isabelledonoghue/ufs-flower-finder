@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>New Request</h1>
+        <form id="queryForm" action="/submit" method="post">
+            <div class="form-group">
+                <label for="deliveryDate">Delivery Date:</label>
+                <input type="text" id="deliveryDate" name="deliveryDate" placeholder="YYYY-MM-DD" required autocomplete="off">
+                <div id="calendar" class="calendar">
+                    <div class="calendar-header">
+                        <button id="prevYear">«</button>
+                        <button id="prevMonth">‹</button>
+                        <span id="calendarMonthYear"></span>
+                        <button id="nextMonth">›</button>
+                        <button id="nextYear">»</button>
+                    </div>
+                    <div id="calendarBody"></div> 
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Flower Types:</label>
+                <div class="dropdown" id="flowerDropdown">
+                    <button type="button" id="flowerButton">Select Flowers</button>
+                    <div class="dropdown-content">
+                        <div class="button-group">
+                            <button type="button" class="select-all" data-group="flowerTypes">Select All</button>
+                            <button type="button" class="deselect-all" data-group="flowerTypes">Deselect All</button>
+                        </div>
+                        <label><input type="checkbox" name="flowerTypes" value="ANEMONE"> Anemone</label>
+                        <label><input type="checkbox" name="flowerTypes" value="CARNATION"> Carnation</label>
+                        <label><input type="checkbox" name="flowerTypes" value="DELPHINIUM"> Delphinium</label>
+                        <label><input type="checkbox" name="flowerTypes" value="EUCALYPTUS"> Eucalyptus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="LISIANTHUS"> Lisianthus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="MUMS"> Mums</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RANUNCULUS"> Ranunculus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="ROSE"> Rose</label>
+                        <label><input type="checkbox" name="flowerTypes" value="RUSCUS"> Ruscus</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SCABIOSA"> Scabiosa</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SNAPDRAGON"> Snapdragon</label>
+                        <label><input type="checkbox" name="flowerTypes" value="STOCK"> Stock</label>
+                        <label><input type="checkbox" name="flowerTypes" value="SALAL"> Salal</label>                        
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Wholesalers:</label>
+                <div class="dropdown" id="wholesalerDropdown">
+                    <button type="button" id="wholesalerButton">Select Wholesalers</button>
+                    <div class="dropdown-content">
+                        <div class="button-group">
+                            <button type="button" class="select-all" data-group="wholesalers">Select All</button>
+                            <button type="button" class="deselect-all" data-group="wholesalers">Deselect All</button>
+                        </div>
+                        <label><input type="checkbox" name="wholesalers" value="mayesh"> Mayesh</label>
+                        <label><input type="checkbox" name="wholesalers" value="kennicott"> Kennicott</label>
+                        <label><input type="checkbox" name="wholesalers" value="holex"> Holex</label>
+                        <label><input type="checkbox" name="wholesalers" value="rooted"> Rooted Farmers</label>
+                    </div>
+                </div>
+            </div>
+            <button id="submit" type="submit">Submit</button>
+        </form>
+    </div>
+
+    <div id="loadingScreen" class="loading-screen hidden">
+        <p id="loadingMessage"></p>
+        <button id="cancelButton">Cancel Request</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='list.css') }}">
+</head>
+<body>
+    <div id="header">
+        <button id="back-button">Back to Results</button>
+    </div>
+    <div id="shopping-list">
+        <h1>Shopping List</h1>
+
+        <div id="button-container">
+            <button id="save-cart">Save Cart</button>
+            <button id="clear-cart">Clear Cart</button>
+        </div>
+
+        <div id="empty-state-message">Your shopping list is empty.</div>
+
+        <div id="table-container">
+            <table id="shoppingListTable">
+                <thead></thead>
+                <tbody></tbody>           
+            </table>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='list.js') }}"></script>
+</body>
+</html>

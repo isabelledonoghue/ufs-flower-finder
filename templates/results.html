@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Finder Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+<body>
+    <div id="results">
+        <h1>Flower Finder Results</h1>
+
+        <div class="shopping-list-container">
+            <a href="/list">
+                <img src="{{ url_for('static', filename='cart.png') }}" alt="Shopping List">
+            </a>
+        </div>
+
+        <button id="newRequestButton">New Request</button>
+        
+        <div id="filters-container">
+            <div id="filters">
+                <label for="filterDeliveryDate">Filter by Delivery Date:</label>
+                <input type="text" id="filterDeliveryDate" placeholder="MM/DD/YYYY">
+
+                <label for="filterSeller">Filter by Seller:</label>
+                <select id="filterSeller">
+                    <option value="">Select Seller</option>
+                </select>
+
+                <label for="filterFarm">Filter by Farm:</label>
+                <select id="filterFarm">
+                    <option value="">Select Farm</option>
+                </select>
+                
+                <label for="filterFlowerName">Filter by Flower Name:</label>
+                <select id="filterFlowerName">
+                    <option value="">Select Flower Name</option>
+                </select>
+            </div>
+            
+            <div id="sorting">
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy">
+                    <option value="">Select Sort Option</option>
+                    <option value="stemPriceAsc">Stem Price</option>
+                    <option value="deliveryDate">Delivery Date</option>
+                </select>
+            </div>
+        </div>
+        
+        <button id="applyFiltersButton">Apply Filters and Sort</button>
+        <button id="removeFiltersButton">Remove Filters and Sort</button>
+
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Add to List</th>
+                    <th>Flower Name</th>
+                    <th>Flower Image</th>
+                    <th>Delivery</th>
+                    <th>Seller</th>
+                    <th>Farm</th>
+                    <th>Prices</th>
+                    <th>Stem Price</th>
+                    <th>Stems Per</th>
+                    <th>Available</th>
+                    <th>Color</th>
+                    <th>Height</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+</body>
+</html>
