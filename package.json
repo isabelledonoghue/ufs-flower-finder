@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "color-namer": "^1.4.0",
+    "puppeteer": "^23.4.0"
+  }
+}

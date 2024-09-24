@@ -10,6 +10,10 @@ function getArgValue(flag) {
     return index > -1 ? args[index + 1] : null;
 }
 // extract values
+// HARDCODE DEBUG
+//deliveryDate = "2024-10-02"
+//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+
 deliveryDate = getArgValue('--deliveryDate') || '';
 flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
@@ -26,12 +30,12 @@ let numPages = 0;
         //console.log("loaded browser")
 
         // print browser console messages
-        page.on('console', async msg => {
-            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-            if (args.length > 0 && args[0].includes("console:")) {
-                console.log(`${args}`);
-            }
-        });
+        // page.on('console', async msg => {
+        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        //     if (args.length > 0 && args[0].includes("console:")) {
+        //         console.log(`${args}`);
+        //     }
+        // });
 
         // login to mayesh
         const loginUrl = "https://www.mayesh.com/login";
@@ -51,126 +55,73 @@ let numPages = 0;
         await page.waitForNavigation(); // wait for login
         //console.log("login success")
 
-        // scrape ALL for multiple dates
-        // start at input date first
+        // scrape ALL
         let currentDate = new Date(deliveryDate);
-        let numAttempts = 0;
-        
-        for (let numScrapes = 0; numScrapes < 3;) {
-            if (numAttempts < 5) {
-                // count number of date change attempts
-                numAttempts++;
-                //console.log("attempt number:", numAttempts);
-                // reset pages count
-                numPages = 0;
-                try {
-                    // format current date
-                    const dateString = formatDate(currentDate);
-                    //console.log("dateString:", dateString)
+        numPages = 0;
+        try {
+            // format current date
+            const dateString = formatDate(currentDate);
+            //console.log("dateString:", dateString)
 
-                    // navigate in current date url
-                    const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
-                    await page.goto(productPageUrl);
-                    //await page.waitForNavigation();
-                    //console.log("navigated to product page");
+            // navigate in current date url
+            const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
+            await page.goto(productPageUrl);
+            //await page.waitForNavigation();
+            //console.log("navigated to product page");
 
-                    // DEBUG find current url
-                    //const currentUrl = await page.url();
-                    //console.log("current url:", currentUrl);
+            // access date that actually populates at url (will default to actual date if invalid)
+            await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
+            let inputValue = await page.evaluate(() => {
+                const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
+                //console.log("console: input element", input);
+                return input ? input.value : null;
+            });
+            const [month, day, year] = inputValue.split('-');
+            inputValue = `${year}-${month}-${day}`;
 
-                    // access date that actually populates at url (will default to actual date if invalid)
-                    // await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
-                    await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
-                    let inputValue = await page.evaluate(() => {
-                        const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
-                        //console.log("console: input element", input);
-                        return input ? input.value : null;
-                    });
-                    //console.log("input value prior:", inputValue);
-                    const [month, day, year] = inputValue.split('-');
-                    inputValue = `${year}-${month}-${day}`;
-                    //console.log('inputValue:', inputValue);
-
-                    if (inputValue == dateString) {
-                        //console.log("valid date");
-                        flowers = await scrapeAllDate(page, dateString, flowers);
-                        //console.log("scraped date:", dateString);
-                        // increment date
-                        currentDate = incrementDate(currentDate);
-                        //console.log("incremented to date:", currentDate);
-                        numScrapes++;
-                    } else {
-                        //console.log("invalid date");
-                        currentDate = incrementDate(currentDate);
-                        //console.log("incremented to date:", currentDate);
-                    }
-                } catch (err) {
-                    console.error(`error when scraping date ${formatDate(currentDate)}:`, err);
-                }
-            } else {
-                break;
+            if (inputValue == dateString) {
+                //console.log("valid date");
+                flowers = await scrapeAllDate(page, dateString, flowers);
+                //console.log("scraped date:", dateString);
             }
+        } catch (err) {
+            console.error(`error when scraping date ${formatDate(currentDate)}:`, err);
         }
 
-        // scrape DUTCH for all dates
-        // start at input date first
+        // scrape DUTCH
         currentDate = new Date(deliveryDate);
-        let numDutchAttempts = 0;
-        
-        for (let numDutchScrapes = 0; numDutchScrapes < 3;) {
-            if (numDutchAttempts < 5) {
-                // count number of date change attempts
-                numDutchAttempts++;
-                // reset pages count
-                numPages = 0;
-                try {
-                    // format current date
-                    const dateString = formatDate(currentDate);
-                    //console.log("dateString:", dateString)
+        numPages = 0;
+        //console.log("scraping dutch")
+        try {
+            //format current date
+            const dateString = formatDate(currentDate);
+            //console.log("dateString:", dateString)
 
-                    // navigate in current date url
-                    const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
-                    await page.goto(productPageUrl);
-                    //await page.waitForNavigation();
-                    //console.log("navigated to product page");
+            // navigate in current date url
+            const productPageUrl = `https://www.mayesh.com/shop?perPage=100&sortBy=Name-ASC&pageNumb=1&date=${dateString}&is_sales_rep=0&is_e_sales=0&criteria=%7B%7D&criteriaInt=%7B%7D&search=&s_search=`;
+            await page.goto(productPageUrl);
+            //await page.waitForNavigation();
+            //console.log("navigated to product page");
 
-                    // DEBUG find current url
-                    //const currentUrl = await page.url();
-                    //console.log("current url:", currentUrl);
+            // access date that actually populates at url (will default to actual date if invalid)
+            await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
+            let inputValue = await page.evaluate(() => {
+                //const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
+                const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
+                //console.log("input element:", input);
+                return input ? input.value : null;
+            });
+            const [month, day, year] = inputValue.split('-');
+            inputValue = `${year}-${month}-${day}`;
+            //console.log("inputValue:", inputValue)
 
-                    // access date that actually populates at url (will default to actual date if invalid)
-                    // await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
-                    await page.waitForSelector('div.input-group.flex-nowrap input.form-control');
-                    let inputValue = await page.evaluate(() => {
-                        //const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
-                        const input = document.querySelector('div.input-group.flex-nowrap input.form-control');
-                        //console.log("input element:", input);
-                        return input ? input.value : null;
-                    });
-                    //console.log("input value prior:", inputValue);
-                    const [month, day, year] = inputValue.split('-');
-                    inputValue = `${year}-${month}-${day}`;
-                    //console.log('inputValue:', inputValue);
-
-                    if (inputValue == dateString) {
-                        //console.log("valid date");
-                        flowers = await scrapeDutchDate(page, dateString, flowers);
-                        //console.log("scraped date:", dateString);
-                        // increment date
-                        currentDate = incrementDate(currentDate);
-                        //console.log("incremented to date:", currentDate);
-                        numDutchScrapes++;
-                    } else {
-                        //console.log("invalid date");
-                        currentDate = incrementDate(currentDate);
-                        //console.log("incremented to date:", currentDate);
-                    }
-                } catch (err) {
-                    console.error(`error when scraping date ${formatDate(currentDate)}:`, err);
-                }
-            } else {
-                break;
+            if (inputValue == dateString) {
+                //console.log("valid date");
+                flowers = await scrapeDutchDate(page, dateString, flowers);
+                //console.log("scraped date:", dateString);
             }
+        } catch (err) {
+            console.error(`error when scraping date ${formatDate(currentDate)}:`, err);
         }
     } catch (err) {
         console.error("error during login or page load:", err);
@@ -192,14 +143,6 @@ function formatDate(date) {
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-}
-
-// increment date by one day (handles last day month/yr)
-function incrementDate(date) {
-    //console.log("increment Date object", date);
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() + 1);
-    return newDate;
 }
 
 async function scrapeAllDate(page, date, flowers) {

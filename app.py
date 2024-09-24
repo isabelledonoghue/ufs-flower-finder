@@ -63,6 +63,7 @@ def run_scraper(script_name, delivery_date, flower_names):
 
     return result.stdout
 
+
 # runs each of the scripts
 def run_all_scrapers(delivery_date, flower_names, scripts):
     """Run all Puppeteer scripts and return their combined JSON outputs."""

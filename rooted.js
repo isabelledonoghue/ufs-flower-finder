@@ -10,8 +10,8 @@ function getArgValue(flag) {
     return index > -1 ? args[index + 1] : null;
 }
 // extract values
-// HARDCODING FOR NOW
-deliveryDate = "08/30/2024"
+// HARDCODE
+deliveryDate = "10/02/2024"
 flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 // deliveryDate = getArgValue('--deliveryDate') || '';
 // flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
@@ -27,7 +27,7 @@ let numPages = 0;
 
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
-        //console.log("loaded browser")
+        console.log("loaded browser")
 
         // print browser console messages
         // page.on('console', async msg => {
@@ -56,7 +56,7 @@ let numPages = 0;
         await page.click('button[type="submit"]');
         //console.log("clicked sign in button");
         await page.waitForNavigation();
-        //console.log("login success")
+        console.log("login success")
 
         // scrape flower data
         currentDate = deliveryDate; // HARDCODED FOR NOW
@@ -67,12 +67,15 @@ let numPages = 0;
     } finally {
         if (browser) {
             await browser.close();
-            //console.log("closed browser");
+            console.log("closed browser");
         }
         //console.log("scraped all data");
         console.log(JSON.stringify(flowers));
     }
 })();
+
+// function to set specific input date on page
+
 
 
 async function scrapeData(page, flowers, currentDate) {
@@ -111,7 +114,7 @@ async function scrapeData(page, flowers, currentDate) {
                     () => !document.querySelector('.ant-list-loading'),
                     { timeout: 10000 }
                 );
-                //console.log("next page", numPages)
+                console.log("next page", numPages)
             } else {
                 hasNextPage = false;
             }
@@ -124,7 +127,7 @@ async function scrapeData(page, flowers, currentDate) {
 }
 
 async function extractFlowerData(page, flowerNames, date) {
-    //console.log("entered extractFlowerData")
+    console.log("entered extractFlowerData")
     try {
         await page.waitForSelector('ul.ant-list-items');
         //console.log("products loaded")

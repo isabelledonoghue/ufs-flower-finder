@@ -10,6 +10,8 @@ function getArgValue(flag) {
     return index > -1 ? args[index + 1] : null;
 }
 // extract values
+//deliveryDate = "2024-10-02"
+//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 deliveryDate = getArgValue('--deliveryDate') || '';
 flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
@@ -26,12 +28,12 @@ let numPages = 0;
         //console.log("loaded browser")
 
         //print browser console messages
-        page.on('console', async msg => {
-            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-            if (args.length > 0 && args[0].includes("console:")) {
-                console.error(`${args}`);
-            }
-        });
+        // page.on('console', async msg => {
+        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        //     if (args.length > 0 && args[0].includes("console:")) {
+        //         console.error(`${args}`);
+        //     }
+        // });
 
         // login to holex
         const loginUrl = "https://holex.com/en_US/login";
@@ -65,12 +67,12 @@ let numPages = 0;
             await page.click('#cboxClose');
             //console.log("closed delivery date popup");
         } else {
-            // console.log("no delivery date popup found");
+            //console.log("no delivery date popup found");
         }
 
         // convert delivery date from frontend into delivery date wanted
-        // input - 2024-08-06
-        // output - 08/06/2024
+        // input - YYYY-MM-DD
+        // output - MM/DD/YYYY
         const [inputYear, inputMonth, inputDay] = deliveryDate.split('-').map(Number);
         let formattedInputDate = new Date(inputYear, inputMonth - 1, inputDay);
         const inputMonthString = (formattedInputDate.getMonth() + 1).toString().padStart(2, '0');
@@ -85,13 +87,9 @@ let numPages = 0;
         // ensure input date is found
         if (inputDateFound) {
             // input date is disabled, move to first open datec
-            if (!inputDateAvail) {
-                deliveryDate = await getNextAvailableDate(page, deliveryDate);
-            }
-            // scrape data for multiple delivery dates
-            for (let i = 0; i < 3; i++) {
+            if (inputDateAvail) {
                 await selectDeliveryDate(page, deliveryDate);
-                //console.log("selected delivery date:", deliveryDate)
+                //console.log("selected delivery date:", deliveryDate);
                 // loop through each page
                 let hasNextPage = true;
                 while (hasNextPage) {
@@ -101,40 +99,28 @@ let numPages = 0;
                         //console.log("page loaded")
                         const newFlowers = await extractFlowerData(page, flowerNames, deliveryDate);
                         flowers = flowers.concat(newFlowers);
-                        // check if there is a next page
+
+                        // check if there is a next 
                         const nextPageLink = await page.$('li.pagination-next.hidden-xs a');
+                        //console.log("nextPageLink = ", nextPageLink);
+
                         if (nextPageLink) {
                             numPages += 1;
-                            await nextPageLink.click();
+                            await page.waitForSelector('li.pagination-next.hidden-xs a');
+                            //prev error await nextPageLink.click();
+                            await page.$eval('li.pagination-next.hidden-xs a', el => el.click());
                             await page.waitForNavigation();
                             //console.log("next page", numPages)
                         } else {
-                            hasNextPage = false;
                             //console.log("last page")
+                            hasNextPage = false;
                         }
                     } catch (err) {
-                        // console.error("error during pagination or scraping:", err);
+                        console.error("error during pagination or scraping:", err);
                         hasNextPage = false;
                     }
+                    //console.log("hasNextPage = ", hasNextPage);
                 }
-                // go back to first page after looping through all
-                await page.waitForSelector('#upgrade-pagination');
-                await page.focus('#upgrade-pagination'); // focus on input field
-                await page.evaluate(() => document.querySelector('#upgrade-pagination').value = ''); // clear current value
-                await page.type('#upgrade-pagination', '1'); // type page 1
-                await page.keyboard.press('Enter'); // press enter
-                // reset number of pages
-                numPages = 0;
-
-                if (i < 2) {
-                    deliveryDate = await getNextAvailableDate(page, deliveryDate);
-                    // check next date was found
-                    if (deliveryDate == "00/00/0000") {
-                        //console.log("invalid next delivery date");
-                        break;
-                    }
-                    //console.log("updated delivery date", deliveryDate);
-                } 
             }
         }
         else {
@@ -190,48 +176,6 @@ async function findInputDate(page, deliveryDate) {
     }
     return { inputDateFound, inputDateAvail };
 }
-
-
-async function getNextAvailableDate(page, currentDate) {
-    //console.log("entered getNextAvailableDate")
-
-    // click on calendar
-    await page.waitForSelector('.js-custom_datepicker');
-    await page.click('.js-custom_datepicker');
-
-    // wait for calendar to appear
-    await page.waitForSelector('.bootstrap-datetimepicker-widget');
-
-    // get date table
-    const days = await page.$$('.bootstrap-datetimepicker-widget .datepicker-days td[data-action="selectDay"]');
-    let foundCurrent = false;
-
-    // loop through day elements
-    for (const day of days) {
-        // get date and disabled status of element
-        const { dayDate, isDisabled } = await page.evaluate(el => {
-            return {
-                dayDate: el.getAttribute('data-day'),
-                isDisabled: el.classList.contains('disabled')
-            };
-        }, day);
-    
-        if (foundCurrent && !isDisabled) {
-            //console.log("next available date found:", dayDate);
-            return dayDate;
-        }
-    
-        if (dayDate === currentDate) {
-            foundCurrent = true;
-            //console.log("found deliveryDate");
-        }
-    }
-    
-    // no next available date found, return current date
-    //console.log("no next available date found");
-    return "00/00/0000"; // filler value
-}
-
 
 async function selectDeliveryDate(page, deliveryDate) {
     //console.log("entered selectDeliveryDate");
@@ -334,14 +278,14 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
 
         return await page.evaluate((flowerNames, currDeliveryDate) => {
             const items = document.querySelectorAll('.product_list_item');
-            //console.log("console: items selected")
+            //console.log("console: items selected", items)
             let flowersData = [];
 
             items.forEach(item => {
                 // extracts flower name in all caps
                 const flowerNameElement = item.querySelector('.name_fav a');
                 const flowerName = flowerNameElement ? flowerNameElement.textContent.trim().toUpperCase() : '';
-                //console.log("flower name:", flowerName);
+                //console.log("console: flower name:", flowerName);
 
                 // check if current name matches name from flowerNames list
                 const containsFlowerName = flowerNames.some(name => flowerName.includes(name));
@@ -353,7 +297,7 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
                     // scrape flower image
                     const flowerImageElement = item.querySelector('img');
                     const flowerImage = flowerImageElement ? flowerImageElement.getAttribute('src') : '';
-                    // console.log("console: image ", flowerImage)
+                    //console.log("console: image ", flowerImage)
 
                     // scrape prices and corresponding quantities
                     const priceElements = item.querySelectorAll('.price_text');
@@ -367,7 +311,7 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
                         const quantity = quantityElements[index] ? quantityElements[index].textContent.trim().replace('x', '').trim() : '';
                         if (price && quantity) {
                             //const formattedPrice = `${price}/${quantity} stems`;
-                            const formattedPrice = `${price.replace('$ ', '$').trim()} /${quantity} ST`;;
+                            const formattedPrice = `${price.replace('$ ', '$').trim()}/${quantity} ST`;;
                             allPrices.push(formattedPrice);
                         }
                     });
@@ -384,7 +328,12 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
                     // scrape flower color
                     const colorElement = item.querySelector('.hlx_plp_color');
                     const color = colorElement ? colorElement.style.background : '';
-                    // console.log("console: color ", color)
+                    // format color correctly
+                    if (color.includes('conic-gradient')) {
+                        color = 'assorted';
+                    }
+                    
+                    //console.log("console: color ", color)
 
                     // scrape height
                     const heightElement = item.querySelector('.classification_attributes_block_details p');

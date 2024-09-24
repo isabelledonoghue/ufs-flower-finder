@@ -10,6 +10,10 @@ function getArgValue(flag) {
     return index > -1 ? args[index + 1] : null;
 }
 // extract values
+// HARDCODE DEBUG
+//deliveryDate = "2024-10-02"
+//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+
 deliveryDate = getArgValue('--deliveryDate') || '';
 flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
@@ -67,19 +71,13 @@ let numPages = 0;
         // format input delivery date
         const deliveryDateObj = new Date(deliveryDate);
         let currentDate = formatDate(deliveryDateObj);
+        // set the delivery date on the page
+        const setDate = await setDeliveryDate(page, currentDate);
 
-        // loop through three different dates
-        for (let i = 0; i < 3; i++) {
-            //console.log(`scraping data for delivery date: ${currentDate}`);
-            // set the delivery date on the page
-            const setDate = await setDeliveryDate(page, currentDate);
-            // scrape data for the new date
-            if (setDate) {
-                //console.log("set date successfully")
-                flowers = await scrapeData(page, flowers, currentDate);
-            }
-            // increment the date for the next iteration
-            currentDate = incrementDate(currentDate);
+        // scrape data
+        if (setDate) {
+            //console.log("set date successfully")
+            flowers = await scrapeData(page, flowers, currentDate);
         }
     } catch (err) {
         console.error("error during login or page load:", err);
@@ -158,20 +156,6 @@ function formatDate(date) {
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${month}/${day}/${year}`;
-}
-
-// increment date by one day (handles last day month/yr)
-function incrementDate(dateString) {
-    // parse date string
-    const [incMonth, incDay, incYear] = dateString.split('/').map(Number);
-    const incDate = new Date(incYear, incMonth - 1, incDay);
-
-    // increment the date by one day
-    incDate.setDate(incDate.getDate() + 1);
-
-    // format the new date
-    formattedDate = formatDate(incDate);
-    return formattedDate;
 }
 
 async function setDeliveryDate(page, currentDate) {

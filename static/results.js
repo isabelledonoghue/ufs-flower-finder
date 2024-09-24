@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td><button class="toggle-list" data-flower-id="${item.id}" style="background-color: ${buttonColor}; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">${buttonText}</button></td>
                 <td>${item.flowerName}</td>
-                <td><img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;"></td>
+                <td>${item.flowerImage ? `<img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;">` : ''}</td>
                 <td>${item.delivery}</td>
                 <td>${item.seller}</td>
                 <td>${item.farm}</td>
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>$${item.stemPrice}</td>
                 <td>${item.stemsPer}</td>
                 <td>${item.available}</td>
-                <td>${item.color}</td>
+                <td>${item.color.includes('rgb') ? `<div style="width: 20px; height: 20px; background-color: ${item.color}; display: inline-block; border: 1px solid black;"></div>`: item.color}</td>
                 <td>${item.height}</td>
             `;
             resultsTableBody.appendChild(row);
