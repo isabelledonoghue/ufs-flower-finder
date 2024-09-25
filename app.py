@@ -89,25 +89,37 @@ def run_all_scrapers(delivery_date, flower_names, scripts):
 @app.route('/scrape', methods=['POST'])
 def scrape():    
     # get parameters from request
-    delivery_date = request.json.get('deliveryDate')
+    delivery_dates = request.json.get('deliveryDates', [])
     flower_names = request.json.get('flowerNames', [])
     scripts = request.json.get('scripts', [])
     
-    print(f"arguments {scripts, delivery_date, flower_names}")
+    print(f"arguments {scripts, delivery_dates, flower_names}")
 
-    if not delivery_date or not flower_names or not scripts:
+    if not delivery_dates or not flower_names or not scripts:
         return jsonify({'error': 'Missing required parameters'}), 400
-
-    data = run_all_scrapers(delivery_date, flower_names, scripts)
-    if not data:
-        return jsonify({'error': 'Scraping failed or no data received'}), 500
     
+    all_data = []
+
+    # loop through each delivery date
+    for delivery_date in delivery_dates:
+        print(f"scraping for delivery date: {delivery_date}")
+        data = run_all_scrapers(delivery_date, flower_names, scripts)
+
+        if not data:
+            print(f"scraping failed for delivery date: {delivery_date}")
+            continue
+        
+        all_data.extend(data)
+            
+    if not all_data:        
+        return jsonify({'error': 'Scraping failed or no data received'}), 500
+
     formatted_data = [
         (
             flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
             flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
         )
-        for flower in data
+        for flower in all_data
     ]
     
     # inserts scraped data into database

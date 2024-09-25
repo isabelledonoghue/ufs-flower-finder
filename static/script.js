@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // CALENDAR
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
+    let selectedDates = new Set();
+
+    // track calendar visibility
+    let isCalendarOpen = false;
     
     function generateCalendar() {
         const firstDay = new Date(currentYear, currentMonth, 1);
@@ -75,14 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarHtml += `<th>${day}</th>`;
         });
         calendarHtml += '</tr></thead><tbody><tr>';
+
         // empty cells before the first day of the month
         for (let i = 0; i < startDay; i++) {
             calendarHtml += '<td></td>';
         }
+
         // days of the month
         for (let day = 1; day <= daysInMonth; day++) {
             const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            calendarHtml += `<td data-date="${formattedDate}">${day}</td>`;
+            const isSelected = selectedDates.has(formattedDate);
+            const backgroundColor = isSelected ? '#6CB26E' : 'white';
+            calendarHtml += `<td data-date="${formattedDate}" style="background-color: ${backgroundColor};">${day}</td>`;
             if ((startDay + day) % 7 === 0) {
                 calendarHtml += '</tr><tr>';
             }
@@ -94,17 +102,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         calendarHtml += '</tr></tbody></table>';
-        calendarBody.innerHTML = calendarHtml;
-        calendarMonthYear.textContent = `${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`;
+        document.getElementById('calendarBody').innerHTML = calendarHtml;
+        document.getElementById('calendarMonthYear').textContent = `${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`;
 
         // event listener for date cells
         document.querySelectorAll('#calendarBody td[data-date]').forEach(cell => {
             cell.addEventListener('click', (event) => {
                 const date = event.target.getAttribute('data-date');
-                deliveryDateInput.value = date;
-                calendarDiv.style.display = 'none';
+                if (selectedDates.has(date)) {
+                    selectedDates.delete(date); // deselect date
+                } else {
+                    selectedDates.add(date); // select date
+                }
+                updateSelectedDates(); // update input with selected dates
+                generateCalendar(); // rerender and highlight selected dates
             });
         });
+    }
+
+    function updateSelectedDates() {
+        const datesArray = Array.from(selectedDates);
+        deliveryDateInput.value = datesArray.join(', ');
     }
 
     function changeMonth(delta) {
@@ -129,10 +147,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('prevYear').addEventListener('click', () => changeYear(-1));
     document.getElementById('nextYear').addEventListener('click', () => changeYear(1));
 
-    deliveryDateInput.addEventListener('click', () => {
-        calendarDiv.style.display = (calendarDiv.style.display === 'block') ? 'none' : 'block';
-        generateCalendar();
+    // deliveryDateInput.addEventListener('click', () => {
+    //     calendarDiv.style.display = (calendarDiv.style.display === 'block') ? 'none' : 'block';
+    //     generateCalendar();
+    // });
+
+    // toggle calendar open/close
+    deliveryDateInput.addEventListener('click', (event) => {
+        event.stopPropagation(); // prevent calendar from being closed when clicking input
+        if (!isCalendarOpen) {
+            calendarDiv.style.display = 'block';
+            isCalendarOpen = true;
+            generateCalendar();
+        }
     });
+
+    // close calendar click outside
+    document.addEventListener('click', (event) => {
+        console.log("clicked outside of calendar")
+        if (isCalendarOpen && !calendarDiv.contains(event.target) && !deliveryDateInput.contains(event.target)) {
+            calendarDiv.style.display = 'none';
+            isCalendarOpen = false;
+        }
+    });
+
+    // prevent click reaching document level listener
+    calendarDiv.addEventListener('click', (event) => {
+        event.stopPropagation();
+    })
 
     deliveryDateInput.addEventListener('input', (event) => {
         let value = event.target.value.replace(/\D/g, ''); // remove non-numeric characters
@@ -163,17 +205,16 @@ document.addEventListener('DOMContentLoaded', () => {
         abortController = new AbortController();
 
         // gather request arguments
-        const deliveryDate = deliveryDateInput.value;
+        const deliveryDates = Array.from(selectedDates);
         const flowerCheckboxes = document.querySelectorAll('#flowerDropdown input[name="flowerTypes"]');
         const selectedFlowers = Array.from(flowerCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
-        const allFlowers = Array.from(flowerCheckboxes).map(checkbox => checkbox.value); // Get all flower types
+        const allFlowers = Array.from(flowerCheckboxes).map(checkbox => checkbox.value); // get all flower types
         const wholesalersCheckboxes = document.querySelectorAll('#wholesalerDropdown input[name="wholesalers"]');
         const selectedWholesalers = Array.from(wholesalersCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
-        const allWholesalers = Array.from(wholesalersCheckboxes).map(checkbox => checkbox.value); // Get all wholesalers
+        const allWholesalers = Array.from(wholesalersCheckboxes).map(checkbox => checkbox.value); // get all wholesalers
         
         const flowerNames = selectedFlowers.length > 0 ? selectedFlowers : allFlowers;
         const scripts = selectedWholesalers.length > 0 ? selectedWholesalers : allWholesalers;
-            
 
         try {
             // clear database before starting new scrape
@@ -190,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    deliveryDate,
+                    deliveryDates,
                     flowerNames,
                     scripts
                 }),

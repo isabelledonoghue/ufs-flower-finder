@@ -119,6 +119,10 @@ button:hover {
     width: 97%;
 }
 
+#deliveryDate::placeholder {
+    color: black;
+}
+
 .calendar-header.hidden {
     display: none;
 }

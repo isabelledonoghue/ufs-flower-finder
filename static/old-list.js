@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 flowers.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><button class="remove-from-list" data-flower-id="${item.id}" style="background-color: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">-</button></td>
+                        <td><button class="toggle-list" data-flower-id="${item.id}" style="background-color: ${buttonColor}; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">${buttonText}</button></td>
                         <td>${item.flowerName}</td>
                         <td>${item.flowerImage ? `<img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;">` : ''}</td>
                         <td>${item.delivery}</td>
@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchShoppingList();
 });
+
 
 
 
