@@ -23,6 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
+    // map to stor urls
+    const sellerUrls = {
+        "Mayesh" : "https://www.mayesh.com/login",
+        "Holex": "https://holex.com/en_US/login",
+        "Kennicott": "https://shop.kennicott.com/",
+        "Rooted Farmers": "https://www.rootedfarmers.com/shop"
+    };
+
     async function fetchShoppingList() {
         try {
             const response = await fetch('/shopping_list_data');
@@ -64,9 +72,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sellerSection = document.createElement('div');
                 sellerSection.classList.add('seller-section');
 
-                // seller name
+                // seller name with link
                 const sellerHeading = document.createElement('h2');
-                sellerHeading.textContent = seller;
+                const sellerLink = document.createElement('a');
+
+                // add seller name as link text
+                sellerLink.href = sellerUrls[seller];
+                sellerLink.textContent = seller;
+                sellerLink.target = '_blank';
+                sellerLink.style.color = 'inherit';
+
+                sellerHeading.appendChild(sellerLink);
                 shoppingListTableBody.appendChild(sellerHeading);
 
                 // table headers
