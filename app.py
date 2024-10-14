@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import subprocess
 import json
-from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list
+from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list, save_cart, get_saved_carts
 
 app = Flask(__name__)
 
@@ -107,7 +107,7 @@ def scrape():
 
         if not data:
             print(f"scraping failed for delivery date: {delivery_date}")
-            continue
+            continue # need to implement an indicator here
         
         all_data.extend(data)
             
@@ -202,6 +202,27 @@ def clear_shopping_list():
         print(f"Error clearing shopping list: {e}")
         return jsonify({'error': 'Failed to clear shopping list'}), 500
 
+@app.route('/save_cart', methods=['POST'])
+def save_cart_route():
+    # Get the cart data from the request
+    cart_items = request.json.get('cartItems', [])
+    if not cart_items:
+        return jsonify({'error': 'No items to save'}), 400
+    try:
+        save_cart(cart_items)  # Call the function from database.py to save the cart items
+        return jsonify({'message': 'Cart saved successfully'}), 200
+    except Exception as e:
+        print(f"Error saving cart: {e}")
+        return jsonify({'error': 'Failed to save cart'}), 500
+
+@app.route('/get_saved_carts', methods=['GET'])
+def get_saved_carts_route():
+    try:
+        items = get_saved_carts()  # Call the function from database.py to retrieve saved carts
+        return jsonify({'savedCarts': items}), 200
+    except Exception as e:
+        print(f"Error fetching saved carts: {e}")
+        return jsonify({'error': 'Failed to fetch saved carts'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

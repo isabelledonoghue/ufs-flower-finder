@@ -146,6 +146,10 @@ h1 {
     text-align: left;
 }
 
+#resultsTable td:nth-child(11), #resultsTable th:nth-child(11) {
+    width: 60px;
+}
+
 #resultsTable th {
     background-color: #f4f4f4;
     color: #333;
@@ -168,7 +172,7 @@ h1 {
     }
 }
 
-@media (max-width: 1105px) {
+@media (max-width: 1180px) {
     /* Hide columns if needed */
     #resultsTable td:nth-child(12),
     #resultsTable th:nth-child(12) { /* height */
@@ -176,7 +180,7 @@ h1 {
     }
 }
 
-@media (max-width: 1030px) {
+@media (max-width: 1100px) {
     /* Hide columns if needed */
     #resultsTable td:nth-child(11),
     #resultsTable th:nth-child(11) { /* color */
@@ -184,7 +188,7 @@ h1 {
     }
 }
 
-@media (max-width: 970px) {
+@media (max-width: 1035px) {
     /* Hide columns if needed */
     #resultsTable td:nth-child(10),
     #resultsTable th:nth-child(10) { /* available */
@@ -192,7 +196,7 @@ h1 {
     }
 }
 
-@media (max-width: 870px) {
+@media (max-width: 940px) {
     /* Hide columns if needed */
     #resultsTable td:nth-child(9),
     #resultsTable th:nth-child(9) { /* stems per */

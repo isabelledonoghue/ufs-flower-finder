@@ -57,6 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsTableBody.innerHTML = '';
         for (const item of data) {
             console.log('Adding row for flower:', item.flowerName);
+
+            // fix holex image url
+            let flowerImageUrl = item.flowerImage;
+            if (flowerImageUrl.includes('cdn.holexflower.com')) {
+                flowerImageUrl = flowerImageUrl.replace(/\/\//, '/'); // remove extra '/'
+            }
             
             // check if item is in shopping list
             const response = await fetch('/is_in_shopping_list', {
@@ -172,12 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
         const sellers = new Set();
         const farms = new Set();
-        const flowerNames = new Set();
-    
+        const flowerNames = new Set(["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", 
+            "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", 
+            "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"]);
+
         data.forEach(item => {
             sellers.add(item.seller);
             farms.add(item.farm);
-            flowerNames.add(item.flowerName);
         });
     
         populateSelect(sellerSelect, sellers);

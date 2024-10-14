@@ -23,6 +23,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
+    document.getElementById('save-cart').addEventListener('click', async () => {
+        const cartItems = [];
+        // Collect current cart items from the table
+        document.querySelectorAll('#shoppingListTable tbody tr').forEach(row => {
+            const flowerName = row.children[1].textContent;
+            const flowerImage = row.children[2].querySelector('img') ? row.children[2].querySelector('img').src : '';
+            const delivery = row.children[3].textContent;
+            const seller = row.children[4].textContent;
+            const farm = row.children[5].textContent;
+            const prices = row.children[6].textContent;
+            const stemPrice = row.children[7].textContent;
+            const stemsPer = row.children[8].textContent;
+            const available = row.children[9].textContent;
+            const color = row.children[10].textContent;
+            const height = row.children[11].textContent;
+            const timestamp = new Date().toISOString(); // ISO format
+            // Push a single object for each flower item into the cartItems array
+            cartItems.push({
+                flowerName,
+                flowerImage,
+                prices,
+                stemPrice,
+                color,
+                height,
+                stemsPer,
+                seller,
+                farm,
+                available,
+                delivery,
+                savedAt: timestamp
+            });
+        });
+    
+        // Send collected data to server
+        try {
+            const response = await fetch('/save_cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cartItems }), // wrap cartItems in an object
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log('Cart saved:', data);
+        } catch (error) {
+            console.error('Error saving cart:', error);
+        }
+    });    
+
     // map to stor urls
     const sellerUrls = {
         "Mayesh" : "https://www.mayesh.com/login",

@@ -54,6 +54,32 @@ def get_shopping_list():
     conn.close()
     return items
 
+def save_cart(cart_items):
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    
+    for item in cart_items:
+        c.execute('''
+            INSERT INTO saved_carts (
+                flower_name, flower_image, prices, stem_price, color, height, stems_per, seller, farm, available, delivery, saved_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (item['flowerName'], item['flowerImage'], item['prices'], item['stemPrice'], item['color'],
+              item['height'], item['stemsPer'], item['seller'], item['farm'], item['available'], item['delivery'], item['savedAt']))
+    
+    conn.commit()
+    conn.close()
+
+def get_saved_carts():
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT flower_name, flower_image, prices, stem_price, color, height, stems_per, seller, farm, available, delivery, saved_at
+        FROM saved_carts
+    ''')
+    items = c.fetchall()
+    print("Saved carts fetched from database:", items)
+    conn.close()
+    return items
 
 if __name__ == "__main__":
     setup_database()

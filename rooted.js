@@ -54,7 +54,7 @@ let numPages = 0;
             seller: "Rooted Farmers",
             farm: 'LIVE & LOCAL',
             available: '10 BU',
-            delivery: '08/10/2024',
+            delivery: '10/20/2024',
         });
 
         // FOR FRONTEND DEBUG
@@ -66,10 +66,39 @@ let numPages = 0;
             color: 'Red',
             height: '10 cm',
             stemsPer: '100',
-            seller: "Mayesh",
+            seller: "Rooted Farmers",
             farm: 'Dutch Direct',
             available: '20 BU',
-            delivery: '08/20/2024',
+            delivery: '10/04/2024',
+        });
+                // FOR FRONTEND DEBUG
+        flowers.push({
+            flowerName: 'SALAL',
+            flowerImage: 'https://cdn.pixabay.com/photo/2023/11/06/09/43/lotus-8369252_1280.jpg',
+            prices: '$20.00/BU, $1.60/ST',
+            stemPrice: '6.00', 
+            color: 'Pink',
+            height: '20 cm',
+            stemsPer: '120',
+            seller: "Rooted Farmers",
+            farm: 'LIVE & LOCAL',
+            available: '0 BU',
+            delivery: '10/02/2024',
+        });
+
+        // FOR FRONTEND DEBUG
+        flowers.push({
+            flowerName: 'MUMS',
+            flowerImage: 'https://cdn.pixabay.com/photo/2023/11/06/09/43/lotus-8369252_1280.jpg',
+            prices: '$12.00/BU, $1.00/ST',
+            stemPrice: '2.50', 
+            color: 'Dark Red',
+            height: '1 cm',
+            stemsPer: '10',
+            seller: "Rooted Farmers",
+            farm: 'Dutch Direct',
+            available: '75 BU',
+            delivery: '10/01/2024',
         });
 
     } catch (err) {

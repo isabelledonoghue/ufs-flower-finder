@@ -20,3 +20,19 @@ CREATE TABLE shopping_list (
     flower_id INTEGER,
     FOREIGN KEY (flower_id) REFERENCES flowers(id)
 );
+
+CREATE TABLE saved_carts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    flowerName TEXT NOT NULL,
+    flowerImage TEXT,
+    prices TEXT,
+    stemPrice TEXT,
+    color TEXT,
+    height TEXT,
+    stemsPer TEXT,
+    seller TEXT,
+    farm TEXT,
+    available TEXT,
+    delivery TEXT
+    saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

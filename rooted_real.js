@@ -11,7 +11,7 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE
-deliveryDate = "10/02/2024"
+deliveryDate = "10/24/2024"
 flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 // deliveryDate = getArgValue('--deliveryDate') || '';
 // flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
@@ -86,17 +86,21 @@ async function selectDate(page, deliveryDate) {
     // click delivery date button
     try {
         // click date button to open popup
-        await page.waitForSelector('button.ant-btn.ant-btn-default');
+        await page.waitForSelector('button.ant-btn.ant-btn-default', { visible: true });
         await page.click('button.ant-btn.ant-btn-default');
         console.log('console: opened date picker popup');
 
         // wait for popup
         await page.waitForSelector('.ant-dropdown:not(.ant-dropdown-hidden)', { visible: true });
+        console.log('console: date picker dropdown is visible');
 
         // click custom button
         await page.waitForSelector('button.ant-btn.ant-btn-primary');
         await page.click('button.ant-btn.ant-btn-primary');
         console.log('console: clicked custom button');
+
+        await page.waitForSelector('input[placeholder="Start date"]');
+        await page.waitForSelector('input[placeholder="End date"]');
 
         // DEBUG log input box content before writing
         const startDateValueBefore = await page.evaluate(() => {
@@ -111,20 +115,36 @@ async function selectDate(page, deliveryDate) {
         console.log("console: End date before setting:", endDateValueBefore);
 
         // type formatted date into input fields
-        const startDateInputSelector = 'input[placeholder="Start date"]';
-        const endDateInputSelector = 'input[placeholder="End date"]'; 
-        await page.evaluate((startSelector, endSelector, value) => {
-            const startInput = document.querySelector(startSelector);
-            if (startInput) {
-                startInput.value = value; // Set new value
-                startInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
+        // const startDateInputSelector = 'input[placeholder="Start date"]';
+        // const endDateInputSelector = 'input[placeholder="End date"]'; 
+        // await page.evaluate((startSelector, endSelector, value) => {
+        //     const startInput = document.querySelector(startSelector);
+        //     if (startInput) {
+        //         startInput.value = value; // Set new value
+        //         startInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
+        //     }
+        //     const endInput = document.querySelector(endSelector); // Use endSelector instead of selector
+        //     if (endInput) {
+        //         endInput.value = value; // Set new value
+        //         endInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
+        //     }
+        // }, startDateInputSelector, endDateInputSelector, formattedDate);
+
+        // Type formatted date into input fields inside page.evaluate
+        await page.evaluate((formattedDate) => {
+            const startDateInput = document.querySelector('input[placeholder="Start date"]');
+            const endDateInput = document.querySelector('input[placeholder="End date"]');
+            
+            if (startDateInput && endDateInput) {
+                startDateInput.value = formattedDate;
+                endDateInput.value = formattedDate;
+
+                // Trigger input events to notify listeners of change
+                const inputEvent = new Event('input', { bubbles: true });
+                startDateInput.dispatchEvent(inputEvent);
+                endDateInput.dispatchEvent(inputEvent);
             }
-            const endInput = document.querySelector(endSelector); // Use endSelector instead of selector
-            if (endInput) {
-                endInput.value = value; // Set new value
-                endInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
-            }
-        }, startDateInputSelector, endDateInputSelector, formattedDate);
+        }, formattedDate); 
 
         // DEBUG log input box content after writing
         const startDateValueAfter = await page.evaluate(() => {

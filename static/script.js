@@ -288,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#flowerDropdown input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
         document.querySelectorAll('#wholesalerDropdown input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
         updateSelectedItems();
+
+        // clear selected delivery dates and reset calendar
+        selectedDates.clear(); // clear set of selected dates
+        generateCalendar(); // regenerate calendar
     });
 
 
