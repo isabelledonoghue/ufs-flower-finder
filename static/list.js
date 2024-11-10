@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('save-cart').addEventListener('click', async () => {
         const cartItems = [];
-        // Collect current cart items from the table
+        // collect current cart items from the table
         document.querySelectorAll('#shoppingListTable tbody tr').forEach(row => {
             const flowerName = row.children[1].textContent;
             const flowerImage = row.children[2].querySelector('img') ? row.children[2].querySelector('img').src : '';
@@ -38,8 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const available = row.children[9].textContent;
             const color = row.children[10].textContent;
             const height = row.children[11].textContent;
-            const timestamp = new Date().toISOString(); // ISO format
-            // Push a single object for each flower item into the cartItems array
+            // push single object for each flower item into the cartItems array
             cartItems.push({
                 flowerName,
                 flowerImage,
@@ -52,11 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 farm,
                 available,
                 delivery,
-                savedAt: timestamp
             });
         });
     
-        // Send collected data to server
+        // send collected data to server
         try {
             const response = await fetch('/save_cart', {
                 method: 'POST',
@@ -73,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error saving cart:', error);
         }
-    });    
+    });       
 
-    // map to stor urls
+    // map to store urls
     const sellerUrls = {
         "Mayesh" : "https://www.mayesh.com/login",
         "Holex": "https://holex.com/en_US/login",
@@ -97,6 +95,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function fetchShoppingList() {
+        try {
+            const shoppingListResponse = await fetch('/shopping_list_data');
+            const cartResponse = await fetch('/saved_cart_data');
+
+            if (!shoppingListResponse.ok || !cartResponse.ok) {
+                throw new Error('One or more network responses were not ok');
+            }
+    
+            const shoppingListData = await shoppingListResponse.json();
+            const cartData = await cartResponse.json();
+    
+            console.log('Shopping list data received:', shoppingListData);
+            console.log('Saved cart data received:', cartData);
+    
+            // const combinedData = {
+            //     shoppingList: shoppingListData,
+            //     savedCarts: cartData
+            // };
+
+            const combinedData = {
+                shoppingList: shoppingListData.map(item => ({ ...item, source: 'shopping-list' })),
+                savedCarts: cartData.map(item => ({ ...item, source: 'saved-cart' }))
+            };
+    
+            populateTable(combinedData);
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+    
+
     function populateTable(data) {
         const emptyStateMessage = document.getElementById('empty-state-message');
         const shoppingListTable = document.getElementById('shoppingListTable');
@@ -110,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             shoppingListTable.style.display = 'table';
 
             // group data by seller
-            const groupedData = data.reduce((acc, item) => {
+            const groupedData = data.shoppingList.concat(data.savedCarts).reduce((acc, item) => {
                 if (!acc[item.seller]) {
                     acc[item.seller] = [];
                 }
@@ -181,12 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
             addRemoveEventListeners();
         }
     }
-
+    
     function addRemoveEventListeners() {
         document.querySelectorAll('.remove-from-list').forEach(button => {
             button.addEventListener('click', (e) => {
                 const flowerId = e.target.getAttribute('data-flower-id');
-                fetch('/remove_from_shopping_list', {
+                const source = e.target.getAttribute('data-source'); // get source
+                
+                const endpoint = source === 'saved-cart' ? '/remove_from_saved_cart' : '/remove_from_shopping_list';
+    
+                fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -195,8 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Flower removed from shopping list:', data);
-                    e.target.closest('tr').remove();
+                    console.log('Flower removed from list:', data);
+                    e.target.closest('tr').remove();  // remove row
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -204,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    
 
     fetchShoppingList();
 });

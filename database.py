@@ -21,6 +21,7 @@ def insert_data(data):
     conn.commit()
     conn.close()
 
+# SHOPPING LIST
 def add_to_shopping_list(flower_id):
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
@@ -54,6 +55,7 @@ def get_shopping_list():
     conn.close()
     return items
 
+# SAVED CART
 def save_cart(cart_items):
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
@@ -61,10 +63,10 @@ def save_cart(cart_items):
     for item in cart_items:
         c.execute('''
             INSERT INTO saved_carts (
-                flower_name, flower_image, prices, stem_price, color, height, stems_per, seller, farm, available, delivery, saved_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                flowerName, flowerImage, prices, stemPrice, color, height, stemsPer, seller, farm, available, delivery
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (item['flowerName'], item['flowerImage'], item['prices'], item['stemPrice'], item['color'],
-              item['height'], item['stemsPer'], item['seller'], item['farm'], item['available'], item['delivery'], item['savedAt']))
+              item['height'], item['stemsPer'], item['seller'], item['farm'], item['available'], item['delivery']))
     
     conn.commit()
     conn.close()
@@ -73,13 +75,25 @@ def get_saved_carts():
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
     c.execute('''
-        SELECT flower_name, flower_image, prices, stem_price, color, height, stems_per, seller, farm, available, delivery, saved_at
+        SELECT flowerName, flowerImage, prices, stemPrice, color, height, stemsPer, seller, farm, available, delivery
         FROM saved_carts
     ''')
     items = c.fetchall()
     print("Saved carts fetched from database:", items)
     conn.close()
+
+    # DEBUG
+    print("Contents of saved_carts table:")
+    for item in items:
+        print(item)
+    
     return items
 
-if __name__ == "__main__":
-    setup_database()
+def clear_saved_carts():
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS saved_carts')
+    with open('sql/schema.sql', 'r') as f:
+        c.executescript(f.read())
+    conn.commit()
+    conn.close()

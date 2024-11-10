@@ -30,12 +30,12 @@ let numPages = 0;
         console.log("loaded browser")
 
         // print browser console messages
-        // page.on('console', async msg => {
-        //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-        //     if (args.length > 0 && typeof args[0] === 'string' && args[0].includes("console:")) {
-        //         console.log(`${args}`);
-        //     }
-        // });
+        page.on('console', async msg => {
+            const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+            if (args.length > 0 && typeof args[0] === 'string' && args[0].includes("console:")) {
+                console.log(`${args}`);
+            }
+        });
 
         // login to rooted farmers
         const url = "https://www.rootedfarmers.com/shop";
@@ -139,7 +139,7 @@ async function selectDate(page, deliveryDate) {
                 startDateInput.value = formattedDate;
                 endDateInput.value = formattedDate;
 
-                // Trigger input events to notify listeners of change
+                // trigger input events to notify listeners of change
                 const inputEvent = new Event('input', { bubbles: true });
                 startDateInput.dispatchEvent(inputEvent);
                 endDateInput.dispatchEvent(inputEvent);

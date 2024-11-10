@@ -2,18 +2,18 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import subprocess
 import json
-from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list, save_cart, get_saved_carts
+from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list, save_cart, get_saved_carts, clear_saved_carts
 
 app = Flask(__name__)
 
 # call setup_database to ensure the database is set up correctly
 setup_database()
 
+# render pages
 @app.route('/')
 def index():
     return render_template('query.html')
 
-# renders results page
 @app.route('/results')
 def results():
     return render_template('results.html')
@@ -126,7 +126,6 @@ def scrape():
     insert_data(formatted_data)
     return jsonify({'message': 'Scraping completed successfully'})
 
-
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
     try:
@@ -136,10 +135,13 @@ def clear_database():
         print(f"Error clearing database: {e}")
         return jsonify({'error': 'Failed to clear and recreate the database'}), 500
     
-
+# shopping list   
 @app.route('/shopping_list_data')
 def shopping_list_data():
-    items = get_shopping_list()
+    # fetch shopping list items - current request
+    shopping_items = get_shopping_list()
+    items = shopping_items
+
     return jsonify([
         {
             'flowerName': item[1],
@@ -166,7 +168,6 @@ def add_to_shopping_list_view():
     print(f"Added flower ID {flower_id} to shopping list.")
     add_to_shopping_list(flower_id)
     return jsonify({'message': 'Item added to shopping list'})
-
 
 @app.route('/remove_from_shopping_list', methods=['POST'])
 def remove_from_shopping_list_view():
@@ -202,6 +203,56 @@ def clear_shopping_list():
         print(f"Error clearing shopping list: {e}")
         return jsonify({'error': 'Failed to clear shopping list'}), 500
 
+# saved carts
+@app.route('/remove_from_saved_cart', methods=['POST'])
+def remove_from_saved_cart():
+    flower_id = request.json.get('flowerId')
+    conn = sqlite3.connect('flowers.db')
+    c = conn.cursor()
+    c.execute('''
+        DELETE FROM saved_carts WHERE id = ?
+    ''', (flower_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Item removed from saved cart'})
+
+@app.route('/clear_saved_cart', methods=['POST'])
+def clear_saved_cart():
+    try:
+        conn = sqlite3.connect('flowers.db')
+        c = conn.cursor()
+        c.execute('DELETE FROM saved_carts')
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Saved cart cleared successfully'})
+    except Exception as e:
+        print(f"Error clearing shopping list: {e}")
+        return jsonify({'error': 'Failed to clear saved cart'}), 500
+
+@app.route('/saved_cart_data')
+def saved_cart_data():
+    # fetch shopping list items - current request
+    saved_items = get_saved_carts()
+    items = saved_items
+
+    return jsonify([
+        {
+            'flowerName': item[1],
+            'flowerImage': item[2],
+            'prices': item[3],
+            'stemPrice': item[4],
+            'color': item[5],
+            'height': item[6],
+            'stemsPer': item[7],
+            'seller': item[8],
+            'farm': item[9],
+            'available': item[10],
+            'delivery': item[11],
+            'id': item[0]
+        }
+        for item in items
+    ])
+
 @app.route('/save_cart', methods=['POST'])
 def save_cart_route():
     # Get the cart data from the request
@@ -210,19 +261,14 @@ def save_cart_route():
         return jsonify({'error': 'No items to save'}), 400
     try:
         save_cart(cart_items)  # Call the function from database.py to save the cart items
+        # DEBUG
+        saved_carts = get_saved_carts()
+        print("Saved cart contents:", saved_carts)
         return jsonify({'message': 'Cart saved successfully'}), 200
     except Exception as e:
         print(f"Error saving cart: {e}")
         return jsonify({'error': 'Failed to save cart'}), 500
 
-@app.route('/get_saved_carts', methods=['GET'])
-def get_saved_carts_route():
-    try:
-        items = get_saved_carts()  # Call the function from database.py to retrieve saved carts
-        return jsonify({'savedCarts': items}), 200
-    except Exception as e:
-        print(f"Error fetching saved carts: {e}")
-        return jsonify({'error': 'Failed to fetch saved carts'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

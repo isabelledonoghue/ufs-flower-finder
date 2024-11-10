@@ -21,7 +21,7 @@ CREATE TABLE shopping_list (
     FOREIGN KEY (flower_id) REFERENCES flowers(id)
 );
 
-CREATE TABLE saved_carts (
+CREATE TABLE IF NOT EXISTS saved_carts (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     flowerName TEXT NOT NULL,
     flowerImage TEXT,
@@ -34,5 +34,4 @@ CREATE TABLE saved_carts (
     farm TEXT,
     available TEXT,
     delivery TEXT
-    saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
