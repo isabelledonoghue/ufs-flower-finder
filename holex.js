@@ -86,7 +86,7 @@ let numPages = 0;
 
         // ensure input date is found
         if (inputDateFound) {
-            // input date is disabled, move to first open datec
+            // input date is disabled, move to first open date
             if (inputDateAvail) {
                 await selectDeliveryDate(page, deliveryDate);
                 //console.log("selected delivery date:", deliveryDate);

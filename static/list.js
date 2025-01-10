@@ -7,17 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('clear-cart').addEventListener('click', async () => {
         try {
-            const response = await fetch('/clear_shopping_list', {
+            // clear shopping list
+            const shoppingListResponse = await fetch('/clear_shopping_list', {
                 method: 'POST'
             });
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+            if (!shoppingListResponse.ok) {
+                throw new Error('Failed to clear shopping list');
             }
-            const data = await response.json();
-            console.log('Clear cart response:', data);
+
+            // clear saved carts
+            const savedCartsResponse = await fetch('/clear_saved_cart', {
+                method: 'POST'
+            });
+            if (!savedCartsResponse.ok) {
+                throw new Error('Failed to clear saved carts');
+            }
             shoppingListTableBody.innerHTML = ''; // clear table
             document.getElementById('empty-state-message').classList.add('visible');
             document.getElementById('shoppingListTable').style.display = 'none';
+            console.log('Cart and saved carts cleared successfully');
         } catch (error) {
             console.error('Fetch error:', error);
         }
@@ -189,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 flowers.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><button class="remove-from-list" data-flower-id="${item.id}" style="background-color: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">-</button></td>
+                        <td><button class="remove-from-list" data-flower-id="${item.id}" data-source="${item.source}" style="background-color: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">-</button></td>
                         <td>${item.flowerName}</td>
                         <td>${item.flowerImage ? `<img src="${item.flowerImage}" alt="${item.flowerName}" style="width: 100px;">` : ''}</td>
                         <td>${item.delivery}</td>
@@ -242,6 +250,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchShoppingList();
 });
-
-
 

@@ -75,8 +75,9 @@ def get_saved_carts():
     conn = sqlite3.connect('flowers.db')
     c = conn.cursor()
     c.execute('''
-        SELECT flowerName, flowerImage, prices, stemPrice, color, height, stemsPer, seller, farm, available, delivery
+        SELECT id, flowerName, flowerImage, prices, stemPrice, color, height, stemsPer, seller, farm, available, delivery
         FROM saved_carts
+        WHERE flowerName != 'Flower Name'
     ''')
     items = c.fetchall()
     print("Saved carts fetched from database:", items)
@@ -86,7 +87,6 @@ def get_saved_carts():
     print("Contents of saved_carts table:")
     for item in items:
         print(item)
-    
     return items
 
 def clear_saved_carts():
