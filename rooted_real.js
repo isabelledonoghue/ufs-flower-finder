@@ -11,7 +11,7 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE
-deliveryDate = "10/24/2024"
+deliveryDate = "07/08/2025"
 flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 // deliveryDate = getArgValue('--deliveryDate') || '';
 // flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
@@ -24,7 +24,6 @@ let numPages = 0;
     let browser = null;
 
     try {
-
         browser = await puppeteer.launch(); // launches puppeteer browser instance
         const page = await browser.newPage(); // opens new browser tab
         console.log("loaded browser")
@@ -99,41 +98,28 @@ async function selectDate(page, deliveryDate) {
         await page.click('button.ant-btn.ant-btn-primary');
         console.log('console: clicked custom button');
 
-        await page.waitForSelector('input[placeholder="Start date"]');
-        await page.waitForSelector('input[placeholder="End date"]');
+        // await page.waitForSelector('input[placeholder="Start date"]');
+        // await page.waitForSelector('input[placeholder="End date"]');
 
         // DEBUG log input box content before writing
         const startDateValueBefore = await page.evaluate(() => {
-            const startDateInput = document.querySelector('input[placeholder="Start date"]');
+            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
             return startDateInput ? startDateInput.value : null;
         });
         const endDateValueBefore = await page.evaluate(() => {
-            const endDateInput = document.querySelector('input[placeholder="End date"]');
+            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
             return endDateInput ? endDateInput.value : null;
         });
         console.log("console: Start date before setting:", startDateValueBefore);
         console.log("console: End date before setting:", endDateValueBefore);
 
         // type formatted date into input fields
-        // const startDateInputSelector = 'input[placeholder="Start date"]';
-        // const endDateInputSelector = 'input[placeholder="End date"]'; 
-        // await page.evaluate((startSelector, endSelector, value) => {
-        //     const startInput = document.querySelector(startSelector);
-        //     if (startInput) {
-        //         startInput.value = value; // Set new value
-        //         startInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
-        //     }
-        //     const endInput = document.querySelector(endSelector); // Use endSelector instead of selector
-        //     if (endInput) {
-        //         endInput.value = value; // Set new value
-        //         endInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event
-        //     }
-        // }, startDateInputSelector, endDateInputSelector, formattedDate);
-
-        // Type formatted date into input fields inside page.evaluate
         await page.evaluate((formattedDate) => {
-            const startDateInput = document.querySelector('input[placeholder="Start date"]');
-            const endDateInput = document.querySelector('input[placeholder="End date"]');
+            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
+            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
+
+            // const startDateInput = document.querySelector('input[placeholder="Start date"]');
+            // const endDateInput = document.querySelector('input[placeholder="End date"]');
             
             if (startDateInput && endDateInput) {
                 startDateInput.value = formattedDate;
@@ -148,11 +134,11 @@ async function selectDate(page, deliveryDate) {
 
         // DEBUG log input box content after writing
         const startDateValueAfter = await page.evaluate(() => {
-            const startDateInput = document.querySelector('input[placeholder="Start date"]');
+            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
             return startDateInput ? startDateInput.value : null;
         });
         const endDateValueAfter = await page.evaluate(() => {
-            const endDateInput = document.querySelector('input[placeholder="End date"]');
+            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
             return endDateInput ? endDateInput.value : null;
         });
         console.log("console: Start date after setting:", startDateValueAfter);
