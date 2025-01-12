@@ -261,9 +261,11 @@ def save_cart_route():
         return jsonify({'error': 'No items to save'}), 400
     try:
         save_cart(cart_items)  # Call the function from database.py to save the cart items
+        # clear shopping list - now only saved cart
+        clear_shopping_list()
         # DEBUG
-        saved_carts = get_saved_carts()
-        print("Saved cart contents:", saved_carts)
+        # saved_carts = get_saved_carts()
+        # print("Saved cart contents:", saved_carts)
         return jsonify({'message': 'Cart saved successfully'}), 200
     except Exception as e:
         print(f"Error saving cart: {e}")

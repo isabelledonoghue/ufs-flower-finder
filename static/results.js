@@ -75,8 +75,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             const isInList = result.isInList;
 
-            const buttonColor = isInList ? 'red' : 'green';
-            const buttonText = isInList ? '-' : '+';
+            // check if item is in saved cart
+            const responseTwo = await fetch('/saved_cart_data');
+            const savedCartData = await responseTwo.json();
+
+            const isInSavedCart = savedCartData.some(savedItem => {
+                console.log('Comparing savedItem and item');
+                return savedItem.flowerName === item.flowerName &&
+                    savedItem.farm === item.farm &&
+                    savedItem.seller === item.seller &&
+                    savedItem.delivery === item.delivery;
+            });
+
+            console.log('isInSavedCart:', isInSavedCart);
+            console.log('isInList:', isInList);
+
+            const isInCart = isInSavedCart || isInList;
+            console.log('isInCart:', isInCart);
+
+            const buttonColor = isInCart ? 'red' : 'green';
+            const buttonText = isInCart ? '-' : '+';
             
             const row = document.createElement('tr');
             row.innerHTML = `

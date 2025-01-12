@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('save-cart').addEventListener('click', async () => {
         const cartItems = [];
+
+        // access current saved cart data
+        const savedCartResponse = await fetch('/saved_cart_data');
+        if (!savedCartResponse.ok) {
+            throw new Error('Failed to fetch saved cart data');
+        }
+        const savedCartData = await savedCartResponse.json();
+
         // collect current cart items from the table
         document.querySelectorAll('#shoppingListTable tbody tr').forEach(row => {
             const flowerName = row.children[1].textContent;
@@ -46,8 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const available = row.children[9].textContent;
             const color = row.children[10].textContent;
             const height = row.children[11].textContent;
-            // push single object for each flower item into the cartItems array
-            cartItems.push({
+
+            // new cart item object
+            const newItem = {
                 flowerName,
                 flowerImage,
                 prices,
@@ -59,7 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 farm,
                 available,
                 delivery,
+            };
+
+            // check for duplicates
+            const isDuplicate = savedCartData.some(item => {
+                console.log('comparing', newItem.flowerName, newItem.farm, newItem.seller, newItem.delivery, 
+                            'with', item.flowerName, item.farm, item.seller, item.delivery);
+                
+                return item.flowerName === newItem.flowerName &&
+                    item.farm === newItem.farm &&
+                    item.seller === newItem.seller &&
+                    item.delivery === newItem.delivery;
             });
+
+            if (!isDuplicate) {
+                // add the new item
+                cartItems.push(newItem);
+            }
         });
     
         // send collected data to server
@@ -204,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${item.seller}</td>
                         <td>${item.farm}</td>
                         <td>${item.prices}</td>
-                        <td>$${item.stemPrice}</td>
+                        <td>${item.stemPrice.startsWith('$') ? item.stemPrice : '$' + item.stemPrice}</td>
                         <td>${item.stemsPer}</td>
                         <td>${item.available}</td>
                         <td>${item.color.includes('rgb') ? `<div style="width: 20px; height: 20px; background-color: ${item.color}; display: inline-block; border: 1px solid black;"></div>`: item.color}</td>

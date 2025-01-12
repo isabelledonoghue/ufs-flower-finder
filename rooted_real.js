@@ -12,7 +12,7 @@ function getArgValue(flag) {
 // extract values
 // HARDCODE
 deliveryDate = "07/08/2025"
-flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+flowerNames = ["PAEONIA", "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 // deliveryDate = getArgValue('--deliveryDate') || '';
 // flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
 //     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
@@ -58,11 +58,13 @@ let numPages = 0;
         console.log("login success")
 
         // set delivery date
-        await selectDate(page, deliveryDate);
-        console.log("set delivery date success")
+        //await selectDate(page, deliveryDate);
+        //console.log("set delivery date success")
+
+        // format delivery date
+        currentDate = formatDeliveryDate(deliveryDate)
 
         // scrape flower data
-        currentDate = deliveryDate; // HARDCODED FOR NOW
         flowers = await scrapeData(page, flowers, currentDate);
 
     } catch (err) {
@@ -78,93 +80,100 @@ let numPages = 0;
 })();
 
 // function to set specific input date on page
-async function selectDate(page, deliveryDate) {
-    // format delivery date - MMM D, YYYY
-    formattedDate = formatDeliveryDate(deliveryDate);
-    console.log("console: formatted delivery date", formattedDate)
-    // click delivery date button
-    try {
-        // click date button to open popup
-        await page.waitForSelector('button.ant-btn.ant-btn-default', { visible: true });
-        await page.click('button.ant-btn.ant-btn-default');
-        console.log('console: opened date picker popup');
+// async function selectDate(page, deliveryDate) {
+//     // format delivery date - MMM D, YYYY
+//     formattedDate = formatDeliveryDate(deliveryDate);
+//     console.log("console: formatted delivery date", formattedDate)
+//     // click delivery date button
+//     try {
+//         // click date button to open popup
+//         await page.waitForSelector('button.ant-btn.ant-btn-default', { visible: true });
+//         await page.click('button.ant-btn.ant-btn-default');
+//         console.log('console: opened date picker popup');
 
-        // wait for popup
-        await page.waitForSelector('.ant-dropdown:not(.ant-dropdown-hidden)', { visible: true });
-        console.log('console: date picker dropdown is visible');
+//         // wait for popup
+//         await page.waitForSelector('.ant-dropdown:not(.ant-dropdown-hidden)', { visible: true });
+//         console.log('console: date picker dropdown is visible');
 
-        // click custom button
-        await page.waitForSelector('button.ant-btn.ant-btn-primary');
-        await page.click('button.ant-btn.ant-btn-primary');
-        console.log('console: clicked custom button');
+//         // click custom button
+//         await page.waitForSelector('button.ant-btn.ant-btn-primary');
+//         await page.click('button.ant-btn.ant-btn-primary');
+//         console.log('console: clicked custom button');
 
-        // await page.waitForSelector('input[placeholder="Start date"]');
-        // await page.waitForSelector('input[placeholder="End date"]');
+//         // await page.waitForSelector('input[placeholder="Start date"]');
+//         // await page.waitForSelector('input[placeholder="End date"]');
 
-        // DEBUG log input box content before writing
-        const startDateValueBefore = await page.evaluate(() => {
-            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
-            return startDateInput ? startDateInput.value : null;
-        });
-        const endDateValueBefore = await page.evaluate(() => {
-            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
-            return endDateInput ? endDateInput.value : null;
-        });
-        console.log("console: Start date before setting:", startDateValueBefore);
-        console.log("console: End date before setting:", endDateValueBefore);
+//         // DEBUG log input box content before writing
+//         const startDateValueBefore = await page.evaluate(() => {
+//             const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
+//             return startDateInput ? startDateInput.value : null;
+//         });
+//         const endDateValueBefore = await page.evaluate(() => {
+//             const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
+//             return endDateInput ? endDateInput.value : null;
+//         });
+//         console.log("console: Start date before setting:", startDateValueBefore);
+//         console.log("console: End date before setting:", endDateValueBefore);
 
-        // type formatted date into input fields
-        await page.evaluate((formattedDate) => {
-            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
-            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
+//         // type formatted date into input fields
+//         await page.evaluate((formattedDate) => {
+//             const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
+//             const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
 
-            // const startDateInput = document.querySelector('input[placeholder="Start date"]');
-            // const endDateInput = document.querySelector('input[placeholder="End date"]');
+//             // const startDateInput = document.querySelector('input[placeholder="Start date"]');
+//             // const endDateInput = document.querySelector('input[placeholder="End date"]');
             
-            if (startDateInput && endDateInput) {
-                startDateInput.value = formattedDate;
-                endDateInput.value = formattedDate;
+//             if (startDateInput && endDateInput) {
+//                 startDateInput.value = formattedDate;
+//                 endDateInput.value = formattedDate;
 
-                // trigger input events to notify listeners of change
-                const inputEvent = new Event('input', { bubbles: true });
-                startDateInput.dispatchEvent(inputEvent);
-                endDateInput.dispatchEvent(inputEvent);
-            }
-        }, formattedDate); 
+//                 // trigger input events to notify listeners of change
+//                 const inputEvent = new Event('input', { bubbles: true });
+//                 startDateInput.dispatchEvent(inputEvent);
+//                 endDateInput.dispatchEvent(inputEvent);
+//             }
+//         }, formattedDate); 
 
-        // DEBUG log input box content after writing
-        const startDateValueAfter = await page.evaluate(() => {
-            const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
-            return startDateInput ? startDateInput.value : null;
-        });
-        const endDateValueAfter = await page.evaluate(() => {
-            const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
-            return endDateInput ? endDateInput.value : null;
-        });
-        console.log("console: Start date after setting:", startDateValueAfter);
-        console.log("console: End date after setting:", endDateValueAfter);
-        console.log("console: set date: ", `${formattedDate} in both inputs`);
+//         // DEBUG log input box content after writing
+//         const startDateValueAfter = await page.evaluate(() => {
+//             const startDateInput = document.querySelector('.ant-picker-input input[placeholder="Start date"]');
+//             return startDateInput ? startDateInput.value : null;
+//         });
+//         const endDateValueAfter = await page.evaluate(() => {
+//             const endDateInput = document.querySelector('.ant-picker-input input[placeholder="End date"]');
+//             return endDateInput ? endDateInput.value : null;
+//         });
+//         console.log("console: Start date after setting:", startDateValueAfter);
+//         console.log("console: End date after setting:", endDateValueAfter);
+//         console.log("console: set date: ", `${formattedDate} in both inputs`);
 
-        // click update button
-        await page.waitForSelector('button.ant-btn.ant-btn-default.ant-btn-lg.ant-btn-block');
-        await page.click('button.ant-btn.ant-btn-default.ant-btn-lg.ant-btn-block');
-        console.log('console: clicked update button');
-    } catch (error) {
-        console.error("Error setting date and submitting: ", error);
-    }
-}
+//         // click update button
+//         await page.waitForSelector('button.ant-btn.ant-btn-default.ant-btn-lg.ant-btn-block');
+//         await page.click('button.ant-btn.ant-btn-default.ant-btn-lg.ant-btn-block');
+//         console.log('console: clicked update button');
+//     } catch (error) {
+//         console.error("Error setting date and submitting: ", error);
+//     }
+// }
 
 // function to format input date for date setting
-function formatDeliveryDate(dateString) {
-    // split input string
-    const [month, day, year] = dateString.split('/');
-    const dateObj = new Date(year, month - 1, day);
-    // format date as 'MMM D, YYYY'
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    const formattedDate = dateObj.toLocaleDateString('en-US', options);
-    return formattedDate;
-}
+// function formatDeliveryDate(dateString) {
+//     // split input string
+//     const [month, day, year] = dateString.split('/');
+//     const dateObj = new Date(year, month - 1, day);
+//     // format date as 'MMM D, YYYY'
+//     const options = { year: 'numeric', month: 'short', day: 'numeric' };
+//     const formattedDate = dateObj.toLocaleDateString('en-US', options);
+//     return formattedDate;
+// }
 
+function formatDeliveryDate(deliveryDate) {
+    // split deliveryDate string into an array [MM, DD, YYYY]
+    const [month, day, year] = deliveryDate.split('/');
+
+    // return the formatted date as MM/DD without leading zeros
+    return `${parseInt(month, 10)}/${parseInt(day, 10)}`;
+}
 
 async function scrapeData(page, flowers, currentDate) {
     let hasNextPage = true;
@@ -226,6 +235,68 @@ async function extractFlowerData(page, flowerNames, date) {
     
             let flowersData = [];
 
+            function matchDeliveryDate(deliveryDate, item) {
+                // Log the entire content of item
+                console.log("console: item content:", item.innerHTML);
+                console.log("console: item outer HTML:", item.outerHTML); 
+
+                // click select button
+                const selectButton = item.querySelector('button.ant-btn.ant-btn-primary');
+                if (selectButton) {
+                    selectButton.click();
+                    //console.log("console: select button clicked");
+                } else {
+                    //console.log("console: select button not found");
+                }
+                
+                // extract date from item
+                // const dateElement = item.querySelector('.ant-typography.css-1qxtz39');
+                // const date = dateElement ? dateElement.textContent.trim() : null;
+                // console.log("console: extracted date:", date);
+
+                // DEBUG
+                // const dateElements = item.querySelectorAll('.css-1qxtz39');
+                // const dates = Array.from(dateElements).map((element) => element.textContent.trim());
+                // console.log("console: extracted dates:", dates); 
+                // const dateElements = item.querySelectorAll('.ant-space-item');
+                // console.log("console: found date elements:", dateElements.length);
+
+                // dateElements.forEach((element, index) => {
+                //     console.log(`console: content of date element [${index}]:`, element.textContent.trim());
+                // });
+
+                // const dates = Array.from(dateElements).map((element) => element.textContent.trim());
+                // console.log("console: extracted dates:", dates);
+
+                // const buttons = item.querySelectorAll('.ant-col button');
+                // // Loop through each button and extract the date from the second <span> element
+                // buttons.forEach(button => {
+                //     // Find the second <span> inside each button, which contains the date (e.g., "7/8")
+                //     const dateSpan = button.querySelector('.ant-typography.css-1qxtz39');
+                //     console.log("console: ", dateSpan); // logs the date (e.g., "7/8")
+                // });
+
+                // check date matches
+                const dateButtons = item.querySelectorAll('.ant-typography.css-1qxtz39');
+                let dateFound = false;
+
+                // loop through dates
+                dateButtons.forEach((dateButton) => {
+                    const date = dateButton.textContent.trim();
+                    console.log("console: checking date:", date);
+                    if (date === deliveryDate) {
+                        console.log(`console: Delivery date ${deliveryDate} matched.`);
+                        dateFound = true;
+                    }
+                });
+            
+                if (!dateFound) {
+                    console.log(`console: Delivery date ${deliveryDate} not found.`);
+                }
+            
+                return dateFound;
+            }
+
             items.forEach(item => {
                 // extracts flower name in all caps
                 const flowerNameElement = item.querySelector('div.ant-space-item span.ant-typography b');
@@ -233,13 +304,18 @@ async function extractFlowerData(page, flowerNames, date) {
                 if (flowerNameElement) {
                     flowerName = flowerNameElement.textContent.trim().toUpperCase();
                 }
+                //console.log("console: name ", flowerName)
 
                 // check if current name matches name from flowerNames list
                 const containsFlowerName = flowerNames.some(name => flowerName.includes(name));
 
                 // scrapes matching available flowers
                 if (containsFlowerName) {
-                    //console.log("console: name ", flowerName)
+                    console.log("console: name ", flowerName)
+
+                    // check delivery date
+                    if (!matchDeliveryDate(date, item)) return;
+                    console.log("console: matched delivery date")
 
                     // scrape price
                     const priceElement = item.querySelector('div.ant-space-item span.ant-typography[aria-label="Current value"]');
