@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Error:', error);
                     }
                 } else {
-                    // remove from list
+                    // remove from shopping list
                     try {
                         const response = await fetch('/remove_from_shopping_list', {
                             method: 'POST',
@@ -151,7 +151,41 @@ document.addEventListener('DOMContentLoaded', () => {
                             body: JSON.stringify({ flowerId })
                         });
                         const data = await response.json();
-                        console.log('Item removed:', data);
+                        console.log('Item removed from shopping list:', data);
+
+                        // remove from saved cart
+                        // access current item 
+                        const itemToRemove = e.target.closest('tr');
+                        const flowerName = itemToRemove.cells[1].textContent;
+                        const farm = itemToRemove.cells[5].textContent;
+                        const seller = itemToRemove.cells[4].textContent;
+                        const delivery = itemToRemove.cells[3].textContent;
+                        // find match in saved cart
+                        const responseTwo = await fetch('/saved_cart_data');
+                        const savedCartData = await responseTwo.json();
+                        const matchingSavedItem = savedCartData.find(savedItem => {
+                            console.log('comparing', flowerName, farm, seller, delivery, 
+                                        'with', savedItem.flowerName, savedItem.farm, savedItem.seller, savedItem.delivery);
+                            
+                            return savedItem.flowerName === flowerName &&
+                                savedItem.farm === farm &&
+                                savedItem.seller === seller &&
+                                savedItem.delivery === delivery;
+                        });
+                        // if match found remove item from saved carts
+                        if (matchingSavedItem) {
+                            const removeSavedItemResponse = await fetch('/remove_from_saved_cart', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ flowerId: matchingSavedItem.id })
+                            });
+                            const removeSavedItemData = await removeSavedItemResponse.json();
+                            console.log('Item removed from saved cart:', removeSavedItemData);
+                        }
+    
+
                         e.target.style.backgroundColor = 'green';
                         e.target.textContent = '+';
                     } catch (error) {
