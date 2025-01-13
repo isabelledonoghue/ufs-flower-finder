@@ -11,9 +11,8 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE DEBUG
-//deliveryDate = "2024-10-02"
-//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
-
+// deliveryDate = "2025-01-16"
+// flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 deliveryDate = getArgValue('--deliveryDate') || '';
 flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"

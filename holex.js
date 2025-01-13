@@ -10,8 +10,8 @@ function getArgValue(flag) {
     return index > -1 ? args[index + 1] : null;
 }
 // extract values
-//deliveryDate = "2024-10-02"
-//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+// deliveryDate = "2025-01-22"
+// flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 deliveryDate = getArgValue('--deliveryDate') || '';
 flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
@@ -27,7 +27,7 @@ let numPages = 0;
         const page = await browser.newPage(); // opens new browser tab
         //console.log("loaded browser")
 
-        //print browser console messages
+        // print browser console messages
         // page.on('console', async msg => {
         //     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
         //     if (args.length > 0 && args[0].includes("console:")) {
@@ -52,7 +52,7 @@ let numPages = 0;
             document.querySelector('#loginForm').submit();
         });
         await page.waitForNavigation(); // wait for login
-        //console.log("login success")
+        // console.log("login success")
 
         // navigate to product page
         const productPageUrl = "https://holex.com/en_US/All-products/Flowers/c/Flowers";
@@ -82,7 +82,7 @@ let numPages = 0;
 
         // check if original delivery date is found and available
         const { inputDateFound, inputDateAvail } = await findInputDate(page, deliveryDate);
-        //console.log("input date status:", inputDateFound, inputDateAvail);
+        // console.log("input date status:", inputDateFound, inputDateAvail);
 
         // ensure input date is found
         if (inputDateFound) {
@@ -277,57 +277,57 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
         //console.log("products loaded")
 
         return await page.evaluate((flowerNames, currDeliveryDate) => {
-            const items = document.querySelectorAll('.product_list_item');
+            let items = document.querySelectorAll('.product_list_item');
             //console.log("console: items selected", items)
             let flowersData = [];
 
             items.forEach(item => {
                 // extracts flower name in all caps
-                const flowerNameElement = item.querySelector('.name_fav a');
-                const flowerName = flowerNameElement ? flowerNameElement.textContent.trim().toUpperCase() : '';
+                let flowerNameElement = item.querySelector('.name_fav a');
+                let flowerName = flowerNameElement ? flowerNameElement.textContent.trim().toUpperCase() : '';
                 //console.log("console: flower name:", flowerName);
 
                 // check if current name matches name from flowerNames list
-                const containsFlowerName = flowerNames.some(name => flowerName.includes(name));
+                let containsFlowerName = flowerNames.some(name => flowerName.includes(name));
 
                 // scrapes matching flowers
                 if (containsFlowerName) {
                     //console.log("console: name ", flowerName)
 
                     // scrape flower image
-                    const flowerImageElement = item.querySelector('img');
-                    const flowerImage = flowerImageElement ? flowerImageElement.getAttribute('src') : '';
+                    let flowerImageElement = item.querySelector('img');
+                    let flowerImage = flowerImageElement ? flowerImageElement.getAttribute('src') : '';
                     //console.log("console: image ", flowerImage)
 
                     // scrape prices and corresponding quantities
-                    const priceElements = item.querySelectorAll('.price_text');
-                    const quantityElements = item.querySelectorAll('.stock_unit');
-                    const allPrices = [];
+                    let priceElements = item.querySelectorAll('.price_text');
+                    let quantityElements = item.querySelectorAll('.stock_unit');
+                    let allPrices = [];
                     let stemPrice = '0';
 
                     // ensure prices and quantities stored together
                     priceElements.forEach((priceElement, index) => {
-                        const price = priceElement ? priceElement.textContent.trim() : '';
-                        const quantity = quantityElements[index] ? quantityElements[index].textContent.trim().replace('x', '').trim() : '';
+                        let price = priceElement ? priceElement.textContent.trim() : '';
+                        let quantity = quantityElements[index] ? quantityElements[index].textContent.trim().replace('x', '').trim() : '';
                         if (price && quantity) {
                             //const formattedPrice = `${price}/${quantity} stems`;
-                            const formattedPrice = `${price.replace('$ ', '$').trim()}/${quantity} ST`;;
+                            let formattedPrice = `${price.replace('$ ', '$').trim()}/${quantity} ST`;;
                             allPrices.push(formattedPrice);
                         }
                     });
-                    const prices = allPrices.join(', '); // convert to string
+                    let prices = allPrices.join(', '); // convert to string
 
                     // set stemPrice
                     if (allPrices.length > 0) {
-                        const priceMatch = allPrices[0].match(/\$([\d.]+)/);
+                        let priceMatch = allPrices[0].match(/\$([\d.]+)/);
                         stemPrice = priceMatch ? priceMatch[1] : '0';
                     }
                     //console.log("console: stemPrice, prices", stemPrice, prices)
 
 
                     // scrape flower color
-                    const colorElement = item.querySelector('.hlx_plp_color');
-                    const color = colorElement ? colorElement.style.background : '';
+                    let colorElement = item.querySelector('.hlx_plp_color');
+                    let color = colorElement ? colorElement.style.background : '';
                     // format color correctly
                     if (color.includes('conic-gradient')) {
                         color = 'assorted';
@@ -336,16 +336,16 @@ async function extractFlowerData(page, flowerNames, currDeliveryDate) {
                     //console.log("console: color ", color)
 
                     // scrape height
-                    const heightElement = item.querySelector('.classification_attributes_block_details p');
-                    const height = heightElement ? heightElement.textContent.trim() : '';
+                    let heightElement = item.querySelector('.classification_attributes_block_details p');
+                    let height = heightElement ? heightElement.textContent.trim() : '';
                     // console.log("console: height ", height)
 
-                    const farmElement = item.querySelector('.country_icon_outer .text');
-                    const farm = farmElement ? farmElement.innerText.trim() : '';
+                    let farmElement = item.querySelector('.country_icon_outer .text');
+                    let farm = farmElement ? farmElement.innerText.trim() : '';
                     // console.log("console: farm ", farm)
 
                     // delivery is date passed in
-                    const delivery = currDeliveryDate;
+                    let delivery = currDeliveryDate;
                     //console.log("console: delivery date", delivery)
 
                     flowersData.push({
