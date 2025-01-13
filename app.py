@@ -272,5 +272,5 @@ def save_cart_route():
         return jsonify({'error': 'Failed to save cart'}), 500
 
 # for running locally
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+#     app.run(debug=True)
