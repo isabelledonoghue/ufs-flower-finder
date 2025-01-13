@@ -87,12 +87,12 @@ def run_all_scrapers(delivery_date, flower_names, scripts):
 
 # scraping API endpoint
 @app.route('/scrape', methods=['POST'])
-def scrape():    
+def scrape():   
     # get parameters from request
     delivery_dates = request.json.get('deliveryDates', [])
     flower_names = request.json.get('flowerNames', [])
     scripts = request.json.get('scripts', [])
-    
+
     print(f"arguments {scripts, delivery_dates, flower_names}")
 
     if not delivery_dates or not flower_names or not scripts:
@@ -272,5 +272,5 @@ def save_cart_route():
         return jsonify({'error': 'Failed to save cart'}), 500
 
 # for running locally
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

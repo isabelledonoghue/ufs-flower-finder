@@ -1,6 +1,18 @@
 {
+  "name": "ufs-flower-finder",
+  "version": "1.0.0",
+  "description": "Flower Finder Node.js scripts for Puppeteer",
+  "scripts": {
+    "scrape-holex": "node holex.js",
+    "scrape-mayesh": "node mayesh.js",
+    "scrape-kennicott": "node kennicott.js",
+    "scrape-rooted": "node rooted.js"
+  },
   "dependencies": {
     "color-namer": "^1.4.0",
     "puppeteer": "^23.4.0"
+  },
+  "engines": {
+    "node": "22.9.0"
   }
 }
