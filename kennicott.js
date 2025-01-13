@@ -26,7 +26,11 @@ let numPages = 0;
 
     try {
 
-        browser = await puppeteer.launch(); // launches puppeteer browser instance
+        //browser = await puppeteer.launch(); // launches puppeteer browser instance
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
         const page = await browser.newPage(); // opens new browser tab
         //console.log("loaded browser")
 
