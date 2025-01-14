@@ -11,13 +11,13 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE DEBUG
-//deliveryDate = "2024-10-02"
-//flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+deliveryDate = "2025-01-20"
+flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 
-deliveryDate = getArgValue('--deliveryDate') || '';
-flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
-    "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
-];
+// deliveryDate = getArgValue('--deliveryDate') || '';
+// flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
+//     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
+// ];
 let numPages = 0;
 
 (async () => {
@@ -44,8 +44,8 @@ let numPages = 0;
 
         // login to kennicott
         const url = "https://shop.kennicott.com/";
-        const username = "events@uniflowershop.com";
-        const password = "StudioUFS212";
+        const username = "shop@uniflowershop.com";
+        const password = "KTThappydayz5!";
 
         await page.goto(url); // load home page
 
