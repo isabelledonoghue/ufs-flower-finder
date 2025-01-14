@@ -57,37 +57,57 @@ def results_data():
 # runs an individual scraper script
 def run_scraper(script_name, delivery_date, flower_names):
     """Run a Puppeteer script and return its output."""
-    # construct command to run using arguments
-    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
-    result = subprocess.run(command, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        print(f"Error running {script_name}: {result.stderr}")
-        return None
+    try:
+        # construct command to run using arguments
+        command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+        logger.debug(f"Running scraper with command: {command}")
+        result = subprocess.run(command, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            logger.error(f"Error running {script_name}: {result.stderr}")
+            print(f"Error running {script_name}: {result.stderr}")
+            return None
 
-    return result.stdout
+        logger.debug(f"Scraper output for {script_name}: {result.stdout}")
+        return result.stdout
+    
+    except Exception as e:
+        logger.exception(f"Exception in run_scraper: {e}")
+        return None
 
 
 # runs each of the scripts
 def run_all_scrapers(delivery_date, flower_names, scripts):
     """Run all Puppeteer scripts and return their combined JSON outputs."""
-    all_data = []
+    try:
+        all_data = []
+        logger.debug(f"Starting to scrape with delivery_date={delivery_date}, flower_names={flower_names}, scripts={scripts}")
 
-    for script in scripts:
-        print(f"scraping data from {script}")
-        output = run_scraper(f'{script}.js', delivery_date, flower_names)
-        if output is None:
-            continue
+        for script in scripts:
+            logger.debug(f"Scraping data from {script}")
+            print(f"scraping data from {script}")
+            output = run_scraper(f'{script}.js', delivery_date, flower_names)
+
+            if output is None:
+                logger.warning(f"Scraper {script} failed or returned no output.")
+                continue
+            
+            try:
+                data = json.loads(output)
+                logger.debug(f"Parsed JSON data from {script}: {data}")
+            except json.JSONDecodeError:
+                logger.error(f"Invalid JSON received from {script}: {output}. Error: {json_error}")
+                print(f"Invalid JSON received from {script}")
+                continue
+            
+            all_data.extend(data)
         
-        try:
-            data = json.loads(output)
-        except json.JSONDecodeError:
-            print(f"Invalid JSON received from {script}")
-            continue
-        
-        all_data.extend(data)
+        logger.debug(f"All scraped data: {all_data}")
+        return all_data
     
-    return all_data
+    except Exception as e:
+        logger.exception(f"Exception in run_all_scrapers: {e}")
+        return []
 
 # scraping API endpoint
 @app.route('/scrape', methods=['POST'])
@@ -112,6 +132,7 @@ def scrape():
         for delivery_date in delivery_dates:
             logger.debug(f"Starting scraping for delivery date: {delivery_date}")
             print(f"scraping for delivery date: {delivery_date}")
+
             data = run_all_scrapers(delivery_date, flower_names, scripts)
 
             if not data:
