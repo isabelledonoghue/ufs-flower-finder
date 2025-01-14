@@ -2,9 +2,13 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import subprocess
 import json
+import logging # REMOVE
 from database import insert_data, setup_database, add_to_shopping_list, remove_from_shopping_list, get_shopping_list, save_cart, get_saved_carts, clear_saved_carts
 
 app = Flask(__name__)
+# REMOVE configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # call setup_database to ensure the database is set up correctly
 setup_database()
@@ -88,43 +92,58 @@ def run_all_scrapers(delivery_date, flower_names, scripts):
 # scraping API endpoint
 @app.route('/scrape', methods=['POST'])
 def scrape():   
-    # get parameters from request
-    delivery_dates = request.json.get('deliveryDates', [])
-    flower_names = request.json.get('flowerNames', [])
-    scripts = request.json.get('scripts', [])
+    try:
+        logger.debug("Scrape endpoint called.")
+        # get parameters from request
+        delivery_dates = request.json.get('deliveryDates', [])
+        flower_names = request.json.get('flowerNames', [])
+        scripts = request.json.get('scripts', [])
 
-    print(f"arguments {scripts, delivery_dates, flower_names}")
+        logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
+        print(f"arguments {scripts, delivery_dates, flower_names}")
 
-    if not delivery_dates or not flower_names or not scripts:
-        return jsonify({'error': 'Missing required parameters'}), 400
-    
-    all_data = []
-
-    # loop through each delivery date
-    for delivery_date in delivery_dates:
-        print(f"scraping for delivery date: {delivery_date}")
-        data = run_all_scrapers(delivery_date, flower_names, scripts)
-
-        if not data:
-            print(f"scraping failed for delivery date: {delivery_date}")
-            continue # need to implement an indicator here
+        if not delivery_dates or not flower_names or not scripts:
+            logger.error("Missing required parameters in the request.")
+            return jsonify({'error': 'Missing required parameters'}), 400
         
-        all_data.extend(data)
-            
-    if not all_data:        
-        return jsonify({'error': 'Scraping failed or no data received'}), 500
+        all_data = []
 
-    formatted_data = [
-        (
-            flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
-            flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
-        )
-        for flower in all_data
-    ]
-    
-    # inserts scraped data into database
-    insert_data(formatted_data)
-    return jsonify({'message': 'Scraping completed successfully'})
+        # loop through each delivery date
+        for delivery_date in delivery_dates:
+            logger.debug(f"Starting scraping for delivery date: {delivery_date}")
+            print(f"scraping for delivery date: {delivery_date}")
+            data = run_all_scrapers(delivery_date, flower_names, scripts)
+
+            if not data:
+                logger.warning(f"Scraping failed or returned no data for delivery date: {delivery_date}")
+                print(f"scraping failed for delivery date: {delivery_date}")
+                continue # need to implement an indicator here
+            
+            logger.debug(f"Scraping succeeded for delivery date: {delivery_date}, data: {data}")
+            all_data.extend(data)
+                
+        if not all_data:        
+            logger.error("Scraping failed or no data received from any script.")
+            return jsonify({'error': 'Scraping failed or no data received'}), 500
+
+        formatted_data = [
+            (
+                flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
+                flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
+            )
+            for flower in all_data
+        ]
+
+        logger.debug(f"Formatted data for database insertion: {formatted_data}")
+
+        # inserts scraped data into database
+        insert_data(formatted_data)
+        logger.info("Scraping completed successfully and data inserted into the database.")
+        return jsonify({'message': 'Scraping completed successfully'})
+
+    except Exception as e:
+        logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
