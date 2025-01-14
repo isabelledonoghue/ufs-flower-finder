@@ -61,6 +61,7 @@ def run_scraper(script_name, delivery_date, flower_names):
         # construct command to run using arguments
         command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
         logger.debug(f"Running scraper with command: {command}")
+
         result = subprocess.run(command, capture_output=True, text=True)
         
         if result.returncode != 0:
@@ -69,7 +70,8 @@ def run_scraper(script_name, delivery_date, flower_names):
             return None
 
         logger.debug(f"Scraper output for {script_name}: {result.stdout}")
-        return result.stdout
+        return json.loads(result.stdout)
+        #return result.stdout
     
     except Exception as e:
         logger.exception(f"Exception in run_scraper: {e}")

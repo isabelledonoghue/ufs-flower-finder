@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const fetch = require('node-fetch');
 
 // parse command line arguments
 const args = process.argv.slice(2); 
@@ -91,7 +92,21 @@ let numPages = 0;
             //console.log("closed browser");
         }
         // console.log("scraped all data");
-        console.log(JSON.stringify(flowers));
+        // console.log(JSON.stringify(flowers));
+        const data = JSON.stringify(flowers);
+        // API endpoint
+        const apiEndpoint = 'http://localhost:5000/scrape';  // Replace with your actual API URL
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: data
+        };
+
+        // send data to API
+        fetch(apiEndpoint, requestOptions)
+            .then(response => response.json())
+            .then(json => console.log('Data sent successfully:', json))
+            .catch(error => console.error('Error sending data:', error));
     }
 })();
 
