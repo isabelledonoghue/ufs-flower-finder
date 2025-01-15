@@ -117,55 +117,7 @@ def results_data():
 #     except Exception as e:
 #         logger.exception(f"Exception in run_all_scrapers: {e}")
 #         return []
-    
-def run_scraper(script_name, delivery_date, flower_names):
-    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
-    try:
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
-        if result.returncode != 0:
-            logger.error(f"Error running {script_name}: {result.stderr}")
-            return False  # Indicate failure to run the script
-        logger.debug(f"Script {script_name} output: {result.stdout}")
-        return True  # Indicate success
 
-    except Exception as e:
-        logger.exception(f"Exception while running {script_name}: {e}")
-        return False  # Indicate failure to run the script
-
-@app.route('/scrape', methods=['POST'])
-def scrape():   
-    try:
-        logger.debug("Scrape endpoint called.")
-        # get parameters from request
-        # data = json.loads(request.data)
-        reqData = request.json
-        # print("/scrape request data:", reqData)
-
-        delivery_dates = reqData.get('deliveryDates', [])
-        flower_names = reqData.get('flowerNames', [])
-        scripts = reqData.get('scripts', [])
-        
-        # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
-        logger.debug(f"arguments {scripts, delivery_dates, flower_names}")
-
-        if not delivery_dates or not flower_names or not scripts:
-            logger.error("Missing required parameters in the request.")
-            return jsonify({'error': 'Missing required parameters'}), 400
-        
-        # loop through each delivery date
-        for delivery_date in delivery_dates:
-            for script in scripts:
-                logger.debug(f"scraping data from {script}")
-                if not run_scraper(script, delivery_date, flower_names):
-                    return jsonify({'error': f"Failed to run scraper for {script} on {delivery_date}"}), 500
-
-        logger.debug(f"ran all scripts")
-        return jsonify({'message': 'scripts running successfully'}), 200
-    
-    except Exception as e:
-        logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
 
 # scraping API endpointf
 # @app.route('/scrape', methods=['POST'])
@@ -227,7 +179,59 @@ def scrape():
 #     except Exception as e:
 #         logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
 #         return jsonify({'error': str(e)}), 500
+    
+def run_scraper(script_name, delivery_date, flower_names):
+    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+    logger.debug("run_scraper called")
+    try:
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        logger.debug("subprocess run")
+        
+        if result.returncode != 0:
+            logger.error(f"Error running {script_name}: {result.stderr}")
+            return False  # Indicate failure to run the script
+        
+        logger.debug(f"Script {script_name} output: {result.stdout}")
+        return True  # Indicate success
 
+    except Exception as e:
+        logger.exception(f"Exception while running {script_name}: {e}")
+        return False  # Indicate failure to run the script
+
+@app.route('/scrape', methods=['POST'])
+def scrape():   
+    try:
+        logger.debug("Scrape endpoint called.")
+        # get parameters from request
+        # data = json.loads(request.data)
+        reqData = request.json
+        # print("/scrape request data:", reqData)
+
+        delivery_dates = reqData.get('deliveryDates', [])
+        flower_names = reqData.get('flowerNames', [])
+        scripts = reqData.get('scripts', [])
+        
+        # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
+        logger.debug(f"arguments {scripts, delivery_dates, flower_names}")
+
+        if not delivery_dates or not flower_names or not scripts:
+            logger.error("Missing required parameters in the request.")
+            return jsonify({'error': 'Missing required parameters'}), 400
+        
+        # loop through each delivery date
+        for delivery_date in delivery_dates:
+            for script in scripts:
+                logger.debug(f"scraping data from {script}")
+                if not run_scraper(script, delivery_date, flower_names):
+                    return jsonify({'error': f"Failed to run scraper for {script} on {delivery_date}"}), 500
+
+        logger.debug(f"ran all scripts")
+        return jsonify({'message': 'scripts running successfully'}), 200
+    
+    except Exception as e:
+        logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+    
 
 @app.route('/receive_scraped_data', methods=['POST'])
 def receive_scraped_data():

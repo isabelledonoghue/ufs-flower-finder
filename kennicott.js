@@ -91,9 +91,9 @@ let numPages = 0;
             await browser.close();
             //console.log("closed browser");
         }
-        // console.log("scraped all data");
+        console.log("scraped all data");
         const data = JSON.stringify({ scrapedData: flowers });
-        //console.log(data);
+        console.log(data);
         // API endpoint
         //const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
         const apiEndpoint = 'https://ufs-flower-finder.onrender.com/receive_scraped_data';
