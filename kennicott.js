@@ -3,7 +3,6 @@ const axios = require('axios');
 
 console.log("running kennicott.js subprocess")
 
-
 // parse command line arguments
 const args = process.argv.slice(2); 
 let deliveryDate = '';
@@ -98,7 +97,7 @@ let numPages = 0;
         const data = JSON.stringify({ scrapedData: flowers });
         //console.log(data);
         // API endpoint
-        // const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
+        //const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
         const apiEndpoint = 'https://ufs-flower-finder.onrender.com/receive_scraped_data';
 
         // send data to API
