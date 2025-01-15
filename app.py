@@ -140,14 +140,14 @@ def scrape():
         # get parameters from request
         # data = json.loads(request.data)
         reqData = request.json
-        print("/scrape request data:", reqData)
+        # print("/scrape request data:", reqData)
 
         delivery_dates = reqData.get('deliveryDates', [])
         flower_names = reqData.get('flowerNames', [])
         scripts = reqData.get('scripts', [])
         
         # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
-        print(f"arguments {scripts, delivery_dates, flower_names}")
+        logger.debug(f"arguments {scripts, delivery_dates, flower_names}")
 
         if not delivery_dates or not flower_names or not scripts:
             logger.error("Missing required parameters in the request.")
@@ -156,11 +156,11 @@ def scrape():
         # loop through each delivery date
         for delivery_date in delivery_dates:
             for script in scripts:
-                print(f"scraping data from {script}")
+                logger.debug(f"scraping data from {script}")
                 if not run_scraper(script, delivery_date, flower_names):
                     return jsonify({'error': f"Failed to run scraper for {script} on {delivery_date}"}), 500
 
-        print(f"ran all scripts")
+        logger.debug(f"ran all scripts")
         return jsonify({'message': 'scripts running successfully'}), 200
     
     except Exception as e:
