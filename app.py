@@ -409,10 +409,10 @@ def save_cart_route():
         print(f"Error saving cart: {e}")
         return jsonify({'error': 'Failed to save cart'}), 500
 
-# for running locally
-if __name__ == "__main__":
-    app.run(debug=True)
+# # for running locally
+# if __name__ == "__main__":
+#     app.run(debug=True)
 # running on render
-# if __name__ == '__main__':
-#     port = int(os.environ.get("PORT", 5000))
-#     app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

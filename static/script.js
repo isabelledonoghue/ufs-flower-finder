@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             console.log('Request successful!', data);
 
-            window.location.href = '/results';
+            //window.location.href = '/results';
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Request was cancelled.');

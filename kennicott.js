@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const axios = require('axios');
 
 // parse command line arguments
@@ -29,7 +29,6 @@ let numPages = 0;
 
         //browser = await puppeteer.launch(); // launches puppeteer browser instance
         const browser = await puppeteer.launch({
-            executablePath: '/usr/bin/google-chrome-stable',
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
@@ -94,9 +93,9 @@ let numPages = 0;
         }
         console.log("scraped all data");
         const data = JSON.stringify({ scrapedData: flowers });
-        console.log(data);
+        //console.log(data);
         // API endpoint
-        //const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
+        // const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
         const apiEndpoint = 'https://ufs-flower-finder.onrender.com/receive_scraped_data';
 
         // send data to API
