@@ -185,7 +185,8 @@ def run_scraper(script_name, delivery_date, flower_names):
     logger.debug("run_scraper called")
     try:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logger.debug("subprocess run")
+        logger.debug(f"stdout: {result.stdout}")
+        logger.debug(f"stderr: {result.stderr}")
         
         if result.returncode != 0:
             logger.error(f"Error running {script_name}: {result.stderr}")

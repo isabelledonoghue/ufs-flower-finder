@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const axios = require('axios');
 
 // parse command line arguments
@@ -29,6 +29,7 @@ let numPages = 0;
 
         //browser = await puppeteer.launch(); // launches puppeteer browser instance
         const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/google-chrome-stable',
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
