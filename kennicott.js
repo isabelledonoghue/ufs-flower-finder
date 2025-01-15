@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 // parse command line arguments
 const args = process.argv.slice(2); 
@@ -12,13 +12,13 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE DEBUG
-deliveryDate = "2025-01-20"
-flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
+// deliveryDate = "2025-01-20"
+// flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 
-// deliveryDate = getArgValue('--deliveryDate') || '';
-// flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
-//     "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
-// ];
+deliveryDate = getArgValue('--deliveryDate') || '';
+flowerNames = getArgValue('--flowerNames') ? getArgValue('--flowerNames').split(',') : [
+    "STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"
+];
 let numPages = 0;
 
 (async () => {
@@ -94,19 +94,18 @@ let numPages = 0;
         // console.log("scraped all data");
         // console.log(JSON.stringify(flowers));
         const data = JSON.stringify(flowers);
+        console.log(data);
         // API endpoint
         const apiEndpoint = 'http://localhost:5000/scrape';  // Replace with your actual API URL
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: data
-        };
-
         // send data to API
-        fetch(apiEndpoint, requestOptions)
-            .then(response => response.json())
-            .then(json => console.log('Data sent successfully:', json))
-            .catch(error => console.error('Error sending data:', error));
+        try {
+            const response = await axios.post(apiEndpoint, data, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            console.log('Data sent successfully:', response.data);
+        } catch (error) {
+            console.error('Error sending data:', error);
+        }
     }
 })();
 

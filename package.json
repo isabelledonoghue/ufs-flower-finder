@@ -9,8 +9,8 @@
     "rooted": "node rooted.js"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "color-namer": "^1.4.0",
-    "node-fetch": "^3.3.2",
     "puppeteer": "^23.4.0"
   },
   "engines": {
