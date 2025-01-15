@@ -1,6 +1,9 @@
 const puppeteer = require('puppeteer');
 const axios = require('axios');
 
+console.log("running kennicott.js subprocess")
+
+
 // parse command line arguments
 const args = process.argv.slice(2); 
 let deliveryDate = '';
