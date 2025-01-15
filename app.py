@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+import os
 import sqlite3
 import subprocess
 import json
@@ -55,118 +56,208 @@ def results_data():
 
 
 # runs an individual scraper script
-def run_scraper(script_name, delivery_date, flower_names):
-    """Run a Puppeteer script and return its output."""
-    try:
-        # construct command to run using arguments
-        command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
-        logger.debug(f"Running scraper with command: {command}")
+# def run_scraper(script_name, delivery_date, flower_names):
+#     """Run a Puppeteer script and return its output."""
+#     try:
+#         # construct command to run using arguments
+#         command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+#         logger.debug(f"Running scraper with command: {command}")
 
-        result = subprocess.run(command, capture_output=True, text=True)
+#         result = subprocess.run(command, capture_output=True, text=True)
         
-        if result.returncode != 0:
-            logger.error(f"Error running {script_name}: {result.stderr}")
-            print(f"Error running {script_name}: {result.stderr}")
-            return None
+#         if result.returncode != 0:
+#             print(f"Error running {script_name}: {result.stderr}")
+#             return None
 
-        logger.debug(f"Scraper output for {script_name}: {result.stdout}")
-        return json.loads(result.stdout)
-        #return result.stdout
+#         logger.debug(f"Scraper output for {script_name}: {result.stdout}")
+
+#         # parse json
+#         try:
+#             data = json.loads(result.stdout)
+#             logger.debug(f"Scraper returned data: {data}")
+#             return data
+#         except json.JSONDecodeError as e:
+#             logger.error(f"Failed to parse JSON from {script_name}: {e}")
+#             return None
+#         #return result.stdout
     
-    except Exception as e:
-        logger.exception(f"Exception in run_scraper: {e}")
-        return None
+#     except Exception as e:
+#         logger.exception(f"Exception in run_scraper: {e}")
+#         return None
 
 
 # runs each of the scripts
-def run_all_scrapers(delivery_date, flower_names, scripts):
-    """Run all Puppeteer scripts and return their combined JSON outputs."""
-    try:
-        all_data = []
-        logger.debug(f"Starting to scrape with delivery_date={delivery_date}, flower_names={flower_names}, scripts={scripts}")
+# def run_all_scrapers(delivery_date, flower_names, scripts):
+#     """Run all Puppeteer scripts and return their combined JSON outputs."""
+#     try:
+#         all_data = []
+#         logger.debug(f"Starting to scrape with delivery_date={delivery_date}, flower_names={flower_names}, scripts={scripts}")
 
-        for script in scripts:
-            logger.debug(f"Scraping data from {script}")
-            print(f"scraping data from {script}")
-            output = run_scraper(f'{script}.js', delivery_date, flower_names)
+#         for script in scripts:
+#             logger.debug(f"Scraping data from {script}")
+#             print(f"scraping data from {script}")
+#             output = run_scraper(f'{script}.js', delivery_date, flower_names)
 
-            if output is None:
-                logger.warning(f"Scraper {script} failed or returned no output.")
-                continue
+#             if output is None:
+#                 logger.warning(f"Scraper {script} failed or returned no output.")
+#                 continue
             
-            try:
-                data = json.loads(output)
-                logger.debug(f"Parsed JSON data from {script}: {data}")
-            except json.JSONDecodeError:
-                logger.error(f"Invalid JSON received from {script}: {output}. Error: {json_error}")
-                print(f"Invalid JSON received from {script}")
-                continue
+#             try:
+#                 data = json.loads(output)
+#                 logger.debug(f"Parsed JSON data from {script}: {data}")
+#             except json.JSONDecodeError:
+#                 print(f"Invalid JSON received from {script}")
+#                 continue
             
-            all_data.extend(data)
+#             all_data.extend(data)
         
-        logger.debug(f"All scraped data: {all_data}")
-        return all_data
+#         logger.debug(f"All scraped data: {all_data}")
+#         return all_data
     
-    except Exception as e:
-        logger.exception(f"Exception in run_all_scrapers: {e}")
-        return []
+#     except Exception as e:
+#         logger.exception(f"Exception in run_all_scrapers: {e}")
+#         return []
+    
+def run_scraper(script_name, delivery_date, flower_names):
+    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+    try:
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        if result.returncode != 0:
+            logger.error(f"Error running {script_name}: {result.stderr}")
+            return False  # Indicate failure to run the script
+        logger.debug(f"Script {script_name} output: {result.stdout}")
+        return True  # Indicate success
 
-# scraping API endpoint
+    except Exception as e:
+        logger.exception(f"Exception while running {script_name}: {e}")
+        return False  # Indicate failure to run the script
+
 @app.route('/scrape', methods=['POST'])
 def scrape():   
     try:
         logger.debug("Scrape endpoint called.")
         # get parameters from request
-        delivery_dates = request.json.get('deliveryDates', [])
-        flower_names = request.json.get('flowerNames', [])
-        scripts = request.json.get('scripts', [])
+        # data = json.loads(request.data)
+        reqData = request.json
+        print("/scrape request data:", reqData)
 
-        logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
+        delivery_dates = reqData.get('deliveryDates', [])
+        flower_names = reqData.get('flowerNames', [])
+        scripts = reqData.get('scripts', [])
+        
+        # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
         print(f"arguments {scripts, delivery_dates, flower_names}")
 
         if not delivery_dates or not flower_names or not scripts:
             logger.error("Missing required parameters in the request.")
             return jsonify({'error': 'Missing required parameters'}), 400
         
-        all_data = []
-
         # loop through each delivery date
         for delivery_date in delivery_dates:
-            logger.debug(f"Starting scraping for delivery date: {delivery_date}")
-            print(f"scraping for delivery date: {delivery_date}")
+            for script in scripts:
+                print(f"scraping data from {script}")
+                if not run_scraper(script, delivery_date, flower_names):
+                    return jsonify({'error': f"Failed to run scraper for {script} on {delivery_date}"}), 500
 
-            data = run_all_scrapers(delivery_date, flower_names, scripts)
+        print(f"ran all scripts")
+        return jsonify({'message': 'scripts running successfully'}), 200
+    
+    except Exception as e:
+        logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
-            if not data:
-                logger.warning(f"Scraping failed or returned no data for delivery date: {delivery_date}")
-                print(f"scraping failed for delivery date: {delivery_date}")
-                continue # need to implement an indicator here
+# scraping API endpointf
+# @app.route('/scrape', methods=['POST'])
+# def scrape():   
+#     try:
+#         logger.debug("Scrape endpoint called.")
+#         # get parameters from request
+#         # data = json.loads(request.data)
+#         reqData = request.json
+#         print("/scrape request data:", reqData)
+
+#         delivery_dates = reqData.get('deliveryDates', [])
+#         flower_names = reqData.get('flowerNames', [])
+#         scripts = reqData.get('scripts', [])
+        
+#         # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
+#         print(f"arguments {scripts, delivery_dates, flower_names}")
+
+#         if not delivery_dates or not flower_names or not scripts:
+#             logger.error("Missing required parameters in the request.")
+#             return jsonify({'error': 'Missing required parameters'}), 400
+        
+#         all_data = []
+
+#         # loop through each delivery date
+#         for delivery_date in delivery_dates:
+#             logger.debug(f"Starting scraping for delivery date: {delivery_date}")
+#             print(f"scraping for delivery date: {delivery_date}")
+
+#             data = run_all_scrapers(delivery_date, flower_names, scripts)
+
+#             if not data:
+#                 logger.warning(f"Scraping failed or returned no data for delivery date: {delivery_date}")
+#                 print(f"scraping failed for delivery date: {delivery_date}")
+#                 continue # need to implement an indicator here
             
-            logger.debug(f"Scraping succeeded for delivery date: {delivery_date}, data: {data}")
-            all_data.extend(data)
+#             logger.debug(f"Scraping succeeded for delivery date: {delivery_date}, data: {data}")
+#             all_data.extend(data)
                 
-        if not all_data:        
-            logger.error("Scraping failed or no data received from any script.")
-            return jsonify({'error': 'Scraping failed or no data received'}), 500
+#         if not all_data:        
+#             logger.error("Scraping failed or no data received from any script.")
+#             return jsonify({'error': 'Scraping failed or no data received'}), 500
 
+#         formatted_data = [
+#             (
+#                 flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
+#                 flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
+#             )
+#             for flower in all_data
+#         ]
+
+#         logger.debug(f"Formatted data for database insertion: {formatted_data}")
+
+#         # inserts scraped data into database
+#         insert_data(formatted_data)
+#         logger.info("Scraping completed successfully and data inserted into the database.")
+#         return jsonify({'message': 'Scraping completed successfully'})
+
+#     except Exception as e:
+#         logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
+#         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/receive_scraped_data', methods=['POST'])
+def receive_scraped_data():
+    try:
+        logger.debug("Received scraped data.")
+        req_data = request.json
+        # print("/receive_scraped_data request data:", req_data)
+
+        scraped_data = req_data.get('scrapedData', [])
+        if not scraped_data:
+            return jsonify({'error': 'No scraped data provided'}), 400
+
+        # Process and store the scraped data
         formatted_data = [
             (
                 flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
                 flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
             )
-            for flower in all_data
+            for flower in scraped_data
         ]
 
-        logger.debug(f"Formatted data for database insertion: {formatted_data}")
-
-        # inserts scraped data into database
+        # inserts scraped data into the database
         insert_data(formatted_data)
-        logger.info("Scraping completed successfully and data inserted into the database.")
-        return jsonify({'message': 'Scraping completed successfully'})
+        logger.info("Scraped data received and inserted into the database.")
+        return jsonify({'message': 'Scraped data inserted successfully'})
 
     except Exception as e:
-        logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
+        logger.error(f"An error occurred in the /receive_scraped_data endpoint: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
@@ -314,9 +405,9 @@ def save_cart_route():
         return jsonify({'error': 'Failed to save cart'}), 500
 
 # for running locally
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
 # running on render
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+# if __name__ == '__main__':
+#     port = int(os.environ.get("PORT", 5000))
+#     app.run(host="0.0.0.0", port=port)

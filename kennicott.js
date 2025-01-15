@@ -12,7 +12,7 @@ function getArgValue(flag) {
 }
 // extract values
 // HARDCODE DEBUG
-// deliveryDate = "2025-01-20"
+// deliveryDate = "2025-02-28"
 // flowerNames = ["STOCK", "SNAPDRAGON", "SALAL", "DELPHINIUM", "ROSE", "CARNATION", "LISIANTHUS", "SCABIOSA", "MUMS", "RANUNCULUS", "ANEMONE", "EUCALYPTUS", "RUSCUS"];
 
 deliveryDate = getArgValue('--deliveryDate') || '';
@@ -92,19 +92,20 @@ let numPages = 0;
             //console.log("closed browser");
         }
         // console.log("scraped all data");
-        // console.log(JSON.stringify(flowers));
-        const data = JSON.stringify(flowers);
-        console.log(data);
+        const data = JSON.stringify({ scrapedData: flowers });
+        //console.log(data);
         // API endpoint
-        const apiEndpoint = 'http://localhost:5000/scrape';  // Replace with your actual API URL
+        const apiEndpoint = 'http://localhost:5000/receive_scraped_data';
         // send data to API
         try {
             const response = await axios.post(apiEndpoint, data, {
                 headers: { 'Content-Type': 'application/json' }
             });
             console.log('Data sent successfully:', response.data);
+            process.exit(0);
         } catch (error) {
             console.error('Error sending data:', error);
+            process.exit(1);
         }
     }
 })();

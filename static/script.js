@@ -216,6 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const flowerNames = selectedFlowers.length > 0 ? selectedFlowers : allFlowers;
         const scripts = selectedWholesalers.length > 0 ? selectedWholesalers : allWholesalers;
 
+        const requestBody = {
+            deliveryDates: deliveryDates,
+            flowerNames: flowerNames,
+            scripts: scripts
+        };
+        
         try {
             // clear database before starting new scrape
             await fetch('/clear_database', {
@@ -225,16 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            console.log(requestBody);
             const response = await fetch('/scrape', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    deliveryDates,
-                    flowerNames,
-                    scripts
-                }),
+                body: JSON.stringify(requestBody),
                 signal: abortController.signal
             });
 
@@ -244,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             console.log('Request successful!', data);
+
             window.location.href = '/results';
         } catch (error) {
             if (error.name === 'AbortError') {
