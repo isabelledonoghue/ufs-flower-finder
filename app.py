@@ -184,11 +184,9 @@ def run_scraper(script_name, delivery_date, flower_names):
     command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
     logger.debug("run_scraper called with command: %s", command)
     try:
-        node_check = subprocess.run(['node', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logger.debug(f"Node.js version: {node_check.stdout}")
-        logger.debug(f"Node.js error: {node_check.stderr}")
+        print(f"Current working directory: {os.getcwd()}")
 
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
         logger.debug(f"stdout: {result.stdout}")
         logger.debug(f"stderr: {result.stderr}")
         
