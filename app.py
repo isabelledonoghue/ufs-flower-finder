@@ -53,151 +53,12 @@ def results_data():
         }
         for flower in flowers_data
     ])
-
-
-# runs an individual scraper script
-# def run_scraper(script_name, delivery_date, flower_names):
-#     """Run a Puppeteer script and return its output."""
-#     try:
-#         # construct command to run using arguments
-#         command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
-#         logger.debug(f"Running scraper with command: {command}")
-
-#         result = subprocess.run(command, capture_output=True, text=True)
-        
-#         if result.returncode != 0:
-#             print(f"Error running {script_name}: {result.stderr}")
-#             return None
-
-#         logger.debug(f"Scraper output for {script_name}: {result.stdout}")
-
-#         # parse json
-#         try:
-#             data = json.loads(result.stdout)
-#             logger.debug(f"Scraper returned data: {data}")
-#             return data
-#         except json.JSONDecodeError as e:
-#             logger.error(f"Failed to parse JSON from {script_name}: {e}")
-#             return None
-#         #return result.stdout
-    
-#     except Exception as e:
-#         logger.exception(f"Exception in run_scraper: {e}")
-#         return None
-
-
-# runs each of the scripts
-# def run_all_scrapers(delivery_date, flower_names, scripts):
-#     """Run all Puppeteer scripts and return their combined JSON outputs."""
-#     try:
-#         all_data = []
-#         logger.debug(f"Starting to scrape with delivery_date={delivery_date}, flower_names={flower_names}, scripts={scripts}")
-
-#         for script in scripts:
-#             logger.debug(f"Scraping data from {script}")
-#             print(f"scraping data from {script}")
-#             output = run_scraper(f'{script}.js', delivery_date, flower_names)
-
-#             if output is None:
-#                 logger.warning(f"Scraper {script} failed or returned no output.")
-#                 continue
-            
-#             try:
-#                 data = json.loads(output)
-#                 logger.debug(f"Parsed JSON data from {script}: {data}")
-#             except json.JSONDecodeError:
-#                 print(f"Invalid JSON received from {script}")
-#                 continue
-            
-#             all_data.extend(data)
-        
-#         logger.debug(f"All scraped data: {all_data}")
-#         return all_data
-    
-#     except Exception as e:
-#         logger.exception(f"Exception in run_all_scrapers: {e}")
-#         return []
-
-
-# scraping API endpointf
-# @app.route('/scrape', methods=['POST'])
-# def scrape():   
-#     try:
-#         logger.debug("Scrape endpoint called.")
-#         # get parameters from request
-#         # data = json.loads(request.data)
-#         reqData = request.json
-#         print("/scrape request data:", reqData)
-
-#         delivery_dates = reqData.get('deliveryDates', [])
-#         flower_names = reqData.get('flowerNames', [])
-#         scripts = reqData.get('scripts', [])
-        
-#         # logger.debug(f"Received request with parameters: deliveryDates={delivery_dates}, flowerNames={flower_names}, scripts={scripts}")
-#         print(f"arguments {scripts, delivery_dates, flower_names}")
-
-#         if not delivery_dates or not flower_names or not scripts:
-#             logger.error("Missing required parameters in the request.")
-#             return jsonify({'error': 'Missing required parameters'}), 400
-        
-#         all_data = []
-
-#         # loop through each delivery date
-#         for delivery_date in delivery_dates:
-#             logger.debug(f"Starting scraping for delivery date: {delivery_date}")
-#             print(f"scraping for delivery date: {delivery_date}")
-
-#             data = run_all_scrapers(delivery_date, flower_names, scripts)
-
-#             if not data:
-#                 logger.warning(f"Scraping failed or returned no data for delivery date: {delivery_date}")
-#                 print(f"scraping failed for delivery date: {delivery_date}")
-#                 continue # need to implement an indicator here
-            
-#             logger.debug(f"Scraping succeeded for delivery date: {delivery_date}, data: {data}")
-#             all_data.extend(data)
-                
-#         if not all_data:        
-#             logger.error("Scraping failed or no data received from any script.")
-#             return jsonify({'error': 'Scraping failed or no data received'}), 500
-
-#         formatted_data = [
-#             (
-#                 flower['flowerName'], flower['flowerImage'], flower['prices'], flower['stemPrice'], flower['color'], flower['height'],
-#                 flower['stemsPer'], flower['seller'], flower['farm'], flower['available'], flower['delivery']
-#             )
-#             for flower in all_data
-#         ]
-
-#         logger.debug(f"Formatted data for database insertion: {formatted_data}")
-
-#         # inserts scraped data into database
-#         insert_data(formatted_data)
-#         logger.info("Scraping completed successfully and data inserted into the database.")
-#         return jsonify({'message': 'Scraping completed successfully'})
-
-#     except Exception as e:
-#         logger.error(f"An error occurred in the /scrape endpoint: {e}", exc_info=True)
-#         return jsonify({'error': str(e)}), 500
     
 def run_scraper(script_name, delivery_date, flower_names):
-    base_dir = '/opt/render/project/src'
-    extension = f"{script_name}.js"
-    script_path = os.path.join(base_dir, extension)
-    logger.debug(f"Script path: {script_path}")
-
-    command = ['node', script_path, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
-    logger.debug("run_scraper called with command: %s", command)
-    logger.debug(f"Current working directory: {os.getcwd()}")
-
-    files_in_dir = os.listdir(base_dir)
-    logger.debug(f"Files in current directory: {files_in_dir}")
-
+    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
     try:
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
-        logger.debug(f"stdout: {result.stdout}")
-        logger.debug(f"stderr: {result.stderr}")
-        
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
         if result.returncode != 0:
             logger.error(f"Error running {script_name}: {result.stderr}")
             return False  # Indicate failure to run the script
@@ -419,10 +280,10 @@ def save_cart_route():
         print(f"Error saving cart: {e}")
         return jsonify({'error': 'Failed to save cart'}), 500
 
-# # for running locally
-# if __name__ == "__main__":
-#     app.run(debug=True)
+# for running locally
+if __name__ == "__main__":
+    app.run(debug=True)
 # running on render
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+# if __name__ == '__main__':
+#     port = int(os.environ.get("PORT", 5000))
+#     app.run(host="0.0.0.0", port=port)
