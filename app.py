@@ -187,8 +187,8 @@ def run_scraper(script_name, delivery_date, flower_names):
         node_check = subprocess.run(['node', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         logger.debug(f"Node.js version: {node_check.stdout}")
         logger.debug(f"Node.js error: {node_check.stderr}")
-        
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True, timeout=0)
+
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
         logger.debug(f"stdout: {result.stdout}")
         logger.debug(f"stderr: {result.stderr}")
         

@@ -1,7 +1,8 @@
-const puppeteer = require('puppeteer');
-const axios = require('axios');
+console.log("running kennicott.js subprocess");
 
-console.log("running kennicott.js subprocess")
+const puppeteer = require('puppeteer');
+console.log("Puppeteer is loaded.");
+const axios = require('axios');
 
 // parse command line arguments
 const args = process.argv.slice(2); 
