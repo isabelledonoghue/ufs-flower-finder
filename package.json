@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Flower Finder Node.js scripts for Puppeteer",
   "scripts": {
-    "holex": "node holex.js",
-    "mayesh": "node mayesh.js",
-    "kennicott": "node kennicott.js",
-    "rooted": "node rooted.js"
+    "set-permissions": "chmod +x /opt/render/project/src/{kennicott.js,mayesh.js,holex.js,rooted.js}",
+    "holex": "npm run set-permissions && node holex.js",
+    "mayesh": "npm run set-permissions && node mayesh.js",
+    "kennicott": "npm run set-permissions && node kennicott.js",
+    "rooted": "npm run set-permissions && node rooted.js"
   },
   "dependencies": {
     "axios": "^1.7.9",
