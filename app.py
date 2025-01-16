@@ -181,9 +181,15 @@ def results_data():
 #         return jsonify({'error': str(e)}), 500
     
 def run_scraper(script_name, delivery_date, flower_names):
-    command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
+    base_dir = '/opt/render/project/src'
+    script_path = os.path.join(base_dir, script_name)
+    logger.debug(f"Script path: {script_path}")
+
+    command = ['node', script_path, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
     logger.debug("run_scraper called with command: %s", command)
     logger.debug(f"Current working directory: {os.getcwd()}")
+    logger.debug("Files in current directory:", os.listdir('/opt/render/project/src'))
+
     try:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
         logger.debug(f"stdout: {result.stdout}")
