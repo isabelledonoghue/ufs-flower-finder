@@ -183,9 +183,8 @@ def results_data():
 def run_scraper(script_name, delivery_date, flower_names):
     command = ['node', script_name, '--deliveryDate', delivery_date, '--flowerNames', ','.join(flower_names)]
     logger.debug("run_scraper called with command: %s", command)
+    logger.debug(f"Current working directory: {os.getcwd()}")
     try:
-        print(f"Current working directory: {os.getcwd()}")
-
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
         logger.debug(f"stdout: {result.stdout}")
         logger.debug(f"stderr: {result.stderr}")
